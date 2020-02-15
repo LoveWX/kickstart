@@ -21,7 +21,7 @@ private:
 	condition_variable cv;
 	bool toExitThread = false;
 	thread threads[3];
-	int capacity[5];//ËÆºõ¿ÉÒÔÉêÇëµÚ5¸öÖÃÎª-1À´×÷ÎªÉÚ±ø¼ò»¯Óï¾ä
+	int capacity[5];//ä¼¼ä¹å¯ä»¥ç”³è¯·ç¬¬5ä¸ªç½®ä¸º-1æ¥ä½œä¸ºå“¨å…µç®€åŒ–è¯­å¥
 	void ClusterThread(int i);
 	int currCluster;
 	int *cluster[4];
@@ -31,7 +31,7 @@ private:
 
 StreamPool::StreamPool()
 {
-	currCluster = 0;//Êµ¼ÊÉÏÊÇµ±Ç°Ê¹ÓÃµÄ×îºóÒ»¸öclusterµÄÏÂ±ê£¬Ö®ºóµÄÄ³clusterÆäcapacity==-1
+	currCluster = 0;//å®é™…ä¸Šæ˜¯å½“å‰ä½¿ç”¨çš„æœ€åä¸€ä¸ªclusterçš„ä¸‹æ ‡ï¼Œä¹‹åçš„clusterå…¶capacity==-1
 	cluster[0] = new int[maxCount];
 	cluster[1] = nullptr;
 	cluster[2] = nullptr;
@@ -48,7 +48,7 @@ StreamPool::StreamPool()
 	threads[0] = thread(&StreamPool::ClusterThread, this, 1);
 	threads[1] = thread(&StreamPool::ClusterThread, this, 2);
 	threads[2] = thread(&StreamPool::ClusterThread, this, 3);
-	this_thread::sleep_for(chrono::microseconds(100));//±£Ö¤¿ªÊ¼Ö´ĞĞÖ®Ç°Èı¸ö×ÓÏß³Ì¶¼ÄÜblock×¡
+	this_thread::sleep_for(chrono::milliseconds(100));//ä¿è¯å¼€å§‹æ‰§è¡Œä¹‹å‰ä¸‰ä¸ªå­çº¿ç¨‹éƒ½èƒ½blockä½
 }
 
 StreamPool::~StreamPool()
@@ -119,11 +119,11 @@ void StreamPool::InsertStream(int streamID)
 	{
 		cluster[i][count[i]++] = streamID;
 		cout << i << endl;
-		//Èç¹ûÕâÀï¼ÓÉÏÑÓÊ±Ö®ºó»ù±¾ÉÏÔÚµ±Ç°clusterÂúÊ±ÏÂÒ»¸öclusterÒÑ¾­ÉêÇëºÃ
-		//Èç¹ûÕâÀï²»¼ÓÑÓÊ±£¬ÓÉÓÚÕâÀïinsert²Ù×÷»ù±¾²»ºÄÊ±£¬ÔÚµ±Ç°clusterÂúÊ±»á´¥·¢µÈ´ı
+		//å¦‚æœè¿™é‡ŒåŠ ä¸Šå»¶æ—¶ä¹‹ååŸºæœ¬ä¸Šåœ¨å½“å‰clusteræ»¡æ—¶ä¸‹ä¸€ä¸ªclusterå·²ç»ç”³è¯·å¥½
+		//å¦‚æœè¿™é‡Œä¸åŠ å»¶æ—¶ï¼Œç”±äºè¿™é‡Œinsertæ“ä½œåŸºæœ¬ä¸è€—æ—¶ï¼Œåœ¨å½“å‰clusteræ»¡æ—¶ä¼šè§¦å‘ç­‰å¾…
 		this_thread::sleep_for(chrono::milliseconds(10));
 
-		//²åÈëµÄÎ»ÖÃÊÇÔÚ×îºóÒ»¸öÊ¹ÓÃµÄclusterÉÏ£¬²¢ÇÒ²»ÊÇµÚ4¸ö£¬²¢ÇÒÇ¡ºÃ²åÈëºó¸ÃclusterÈİÁ¿±äÎª8Ê±£¬ĞèÒªÍ¨ÖªÀ´×¼±¸ÏÂÒ»¸öcluster
+		//æ’å…¥çš„ä½ç½®æ˜¯åœ¨æœ€åä¸€ä¸ªä½¿ç”¨çš„clusterä¸Šï¼Œå¹¶ä¸”ä¸æ˜¯ç¬¬4ä¸ªï¼Œå¹¶ä¸”æ°å¥½æ’å…¥åè¯¥clusterå®¹é‡å˜ä¸º8æ—¶ï¼Œéœ€è¦é€šçŸ¥æ¥å‡†å¤‡ä¸‹ä¸€ä¸ªcluster
 		if (i == currCluster && count[i] == 8)
 		{
 			unique_lock<mutex> lck(mtx);
@@ -141,7 +141,7 @@ void StreamPool::InsertStream(int streamID)
 		cout << "StreamPool is full" << endl;
 		return;
 	}
-	//ĞèÒª¼ì²éĞÂµÄclusterÊÇ·ñÒÑ¾­Íê³É
+	//éœ€è¦æ£€æŸ¥æ–°çš„clusteræ˜¯å¦å·²ç»å®Œæˆ
 	cout << "Check new cluster " << i;
 	unique_lock<mutex> lck(mtx);
 	while (capacity[i] == -1)
@@ -151,7 +151,7 @@ void StreamPool::InsertStream(int streamID)
 	lck.unlock();
 	cv.notify_all();
 	cout << " Check new cluster :" << capacity[0] << ' ' << capacity[1] << ' ' << capacity[2] << ' ' << capacity[3] << endl;
-	cluster[++currCluster[0]] = streamID;
+	cluster[++currCluster][0] = streamID;
 	count[currCluster] = 1;
 	cout << currCluster << endl;
 	this_thread::sleep_for(chrono::milliseconds(10));
@@ -170,7 +170,7 @@ void StreamPool::DeleteStream1(int clusterID)
 		cout << cluster[clusterID][--count[clusterID]] << endl;
 		this_thread::sleep_for(chrono::milliseconds(10));
 
-		//É¾³ıµÄÎ»ÖÃÊÇÔÚ×îºóÒ»¸öÊ¹ÓÃµÄclusterÉÏ£¬²¢ÇÒ²»ÊÇµÚ3¸ö£¬²¢ÇÒÇ¡ºÃÉ¾³ıºó¸ÃclusterÈİÁ¿±äÎª0Ê±£¬ĞèÒª¼ì²éÏÂÒ»¸öclusterÊÇ·ñÒÑ¾­É¾³ıÁË
+		//åˆ é™¤çš„ä½ç½®æ˜¯åœ¨æœ€åä¸€ä¸ªä½¿ç”¨çš„clusterä¸Šï¼Œå¹¶ä¸”ä¸æ˜¯ç¬¬3ä¸ªï¼Œå¹¶ä¸”æ°å¥½åˆ é™¤åè¯¥clusterå®¹é‡å˜ä¸º0æ—¶ï¼Œéœ€è¦æ£€æŸ¥ä¸‹ä¸€ä¸ªclusteræ˜¯å¦å·²ç»åˆ é™¤äº†
 		if (clusterID == currCluster && clusterID != 3 && count[clusterID] == 0)
 		{
 			cout << "DeleteStream:" << clusterID << ":want to change currCluster";
@@ -185,17 +185,17 @@ void StreamPool::DeleteStream1(int clusterID)
 			--currCluster;
 		}
 
-		//É¾³ıºó¸ÃclusterÈİÁ¿±äÎª7Ê±£¬ĞèÒªÍ¨ÖªÀ´É¾³ıÏÂÒ»¸öcluster
+		//åˆ é™¤åè¯¥clusterå®¹é‡å˜ä¸º7æ—¶ï¼Œéœ€è¦é€šçŸ¥æ¥åˆ é™¤ä¸‹ä¸€ä¸ªcluster
 		if (count[clusterID] == 7)
 		{
 			unique_lock<mutex> lck(mtx);
 			capacity[clusterID] = 7;
 			lck.unlock();
-			cv.notify_all();//Í¨ÖªÏÂÒ»¸öcluster³¢ÊÔ¹Ø±Õ,¿ÉÒÔ¸½¼şÅĞ¶ÏÊÇ²»ÊÇÔÚµ¹ÊıµÚ¶ş¸öclusterÉÏif(clusterID==currCluster-1)
+			cv.notify_all();//é€šçŸ¥ä¸‹ä¸€ä¸ªclusterå°è¯•å…³é—­,å¯ä»¥é™„åŠ åˆ¤æ–­æ˜¯ä¸æ˜¯åœ¨å€’æ•°ç¬¬äºŒä¸ªclusterä¸Šif(clusterID==currCluster-1)
 			cout << "DeleteStream:" << clusterID << ":try to delete Cluster" << endl;
 		}
-		//É¾³ıµÄÎ»ÖÃÊÇÔÚ×îºóÒ»¸öÊ¹ÓÃµÄclusterÉÏ£¬²¢ÇÒ²»ÊÇµÚ0¸ö£¬²¢ÇÒÇ¡ºÃÉ¾³ıºó¸ÃclusterÈİÁ¿±äÎª0Ê±£¬ĞèÒªÍ¨ÖªÀ´³¢ÊÔÉ¾³ıÕâ¸öcluster
-		//²¢ÇÒÓĞ¿ÉÄÜ³öÏÖÁ¬Ğø¹Ø±ÕclusterµÄÇé¿ö£¬ĞèÒªÓÃÑ­»·ÅĞ¶ÏÒ»ÏÂ
+		//åˆ é™¤çš„ä½ç½®æ˜¯åœ¨æœ€åä¸€ä¸ªä½¿ç”¨çš„clusterä¸Šï¼Œå¹¶ä¸”ä¸æ˜¯ç¬¬0ä¸ªï¼Œå¹¶ä¸”æ°å¥½åˆ é™¤åè¯¥clusterå®¹é‡å˜ä¸º0æ—¶ï¼Œéœ€è¦é€šçŸ¥æ¥å°è¯•åˆ é™¤è¿™ä¸ªcluster
+		//å¹¶ä¸”æœ‰å¯èƒ½å‡ºç°è¿ç»­å…³é—­clusterçš„æƒ…å†µï¼Œéœ€è¦ç”¨å¾ªç¯åˆ¤æ–­ä¸€ä¸‹
 		else if (clusterID == currCluster && clusterID != 0 && count[clusterID] == 0)
 		{
 			unique_lock<mutex> lck(mtx);
@@ -223,7 +223,7 @@ void StreamPool::DeleteStream(int clusterID)
 		{
 			unique_lock<mutex> lck(mtx);
 			capacity[clusterID] = 0;
-			if (clusterID == currCluster)//É¾³ıµÄÎ»ÖÃÊÇÔÚ×îºóÒ»¸öÊ¹ÓÃµÄclusterÉÏ£¬²¢ÇÒÇ¡ºÃÉ¾³ıºó¸ÃclusterÈİÁ¿±äÎª0Ê±£¬ĞèÒª¼ì²éÏÂÒ»¸öclusterÊÇ·ñÒÑ¾­É¾³ıÁË
+			if (clusterID == currCluster)//åˆ é™¤çš„ä½ç½®æ˜¯åœ¨æœ€åä¸€ä¸ªä½¿ç”¨çš„clusterä¸Šï¼Œå¹¶ä¸”æ°å¥½åˆ é™¤åè¯¥clusterå®¹é‡å˜ä¸º0æ—¶ï¼Œéœ€è¦æ£€æŸ¥ä¸‹ä¸€ä¸ªclusteræ˜¯å¦å·²ç»åˆ é™¤äº†
 			{
 				while (capacity[clusterID + 1] != -1)
 				{
@@ -232,9 +232,9 @@ void StreamPool::DeleteStream(int clusterID)
 			}
 			for (; currCluster > 0 && count[currCluster] == 0 && count[currCluster - 1] <= 7; --currCluster) {}
 			lck.unlock();
-			cv.notify_all();//if(clusterID==0)²»ĞèÒªnotify
+			cv.notify_all();//if(clusterID==0)ä¸éœ€è¦notify
 		}
-		//É¾³ıºó¸ÃclusterÈİÁ¿±äÎª7Ê±£¬ĞèÒªÍ¨ÖªÈ¥É¾³ıÏÂÒ»¸öcluster
+		//åˆ é™¤åè¯¥clusterå®¹é‡å˜ä¸º7æ—¶ï¼Œéœ€è¦é€šçŸ¥å»åˆ é™¤ä¸‹ä¸€ä¸ªcluster
 		else if (count[clusterID] == 7)
 		{
 			unique_lock<mutex> lck(mtx);
@@ -244,16 +244,15 @@ void StreamPool::DeleteStream(int clusterID)
 				--currCluster;
 			}
 			lck.unlock();
-			cv.notify_all();//Í¨ÖªÏÂÒ»¸öcluster³¢ÊÔ¹Ø±Õ,¿ÉÒÔ¸½¼ÓÅĞ¶ÏÊÇ²»ÊÇÔÚµ¹ÊıµÚ¶ş¸öclusterÉÏif(clusterID==currCluster-1)
+			cv.notify_all();//é€šçŸ¥ä¸‹ä¸€ä¸ªclusterå°è¯•å…³é—­,å¯ä»¥é™„åŠ åˆ¤æ–­æ˜¯ä¸æ˜¯åœ¨å€’æ•°ç¬¬äºŒä¸ªclusterä¸Šif(clusterID==currCluster-1)
 			cout << "DeleteStream:" << clusterID << ":try to delete Cluster" << endl;
 		}
-		//É¾³ıµÄÎ»ÖÃÊÇÔÚ×îºóÒ»¸öÊ¹ÓÃµÄclusterÉÏ£¬²¢ÇÒ²»ÊÇµÚ0¸ö£¬²¢ÇÒÇ¡ºÃÉ¾³ıºó¸ÃclusterÈİÁ¿±äÎª0Ê±£¬ĞèÒªÍ¨ÖªÀ´³¢ÊÔÉ¾³ıÕâ¸öcluster
-		//²¢ÇÒÓĞ¿ÉÄÜ³öÏÖÁ¬Ğø¹Ø±ÕclusterµÄÇé¿ö£¬µ«ÊÇÖ»ĞèÒªnotifyÒ»´Î£¬»á´Ó
+		//åˆ é™¤çš„ä½ç½®æ˜¯åœ¨æœ€åä¸€ä¸ªä½¿ç”¨çš„clusterä¸Šï¼Œå¹¶ä¸”ä¸æ˜¯ç¬¬0ä¸ªï¼Œå¹¶ä¸”æ°å¥½åˆ é™¤åè¯¥clusterå®¹é‡å˜ä¸º0æ—¶ï¼Œéœ€è¦é€šçŸ¥æ¥å°è¯•åˆ é™¤è¿™ä¸ªcluster
+		//å¹¶ä¸”æœ‰å¯èƒ½å‡ºç°è¿ç»­å…³é—­clusterçš„æƒ…å†µï¼Œä½†æ˜¯åªéœ€è¦notifyä¸€æ¬¡ï¼Œä¼šä»
 	}
 }
 
-
-//Ö»ÓĞClusterThread(1),ClusterThread(2),ClusterThread(3)
+//åªæœ‰ClusterThread(1),ClusterThread(2),ClusterThread(3)
 void StreamPool::ClusterThread(int i)
 {
 	string slog = "In ClusterThread ";
@@ -277,7 +276,7 @@ void StreamPool::ClusterThread(int i)
 			//cv.notify_all();
 			break;
 		}
-		cluster[i] = new int[maxCount];//Ê§°ÜµÄ»°»¹ĞèÒª´¦ÀíÒ»ÏÂ
+		cluster[i] = new int[maxCount];//å¤±è´¥çš„è¯è¿˜éœ€è¦å¤„ç†ä¸€ä¸‹
 		capacity[i] = 0;
 		lck.unlock();
 		cv.notify_all();
