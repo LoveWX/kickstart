@@ -25,6 +25,23 @@ int main()
 				oddval.push_back(t);
 			}
 		}
+		sort(oddval.begin(), oddval.end());
+		sort(evenval.begin(), evenval.end(), greater<int>());
+		vector<int> ans(n);
+		for (int i = 0; i < oddpos.size(); ++i)
+		{
+			ans[oddpos[i]] = oddval[i];
+		}
+		for (int i = 0; i < evenpos.size(); ++i)
+		{
+			ans[evenpos[i]] = evenval[i];
+		}
+		cout << "Case #" << icase << ":";
+		for (int i : ans)
+		{
+			cout << ' ' << i;
+		}
+		cout << endl;
 	}
 	return 0;
 }
