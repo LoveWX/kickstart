@@ -16,7 +16,7 @@ struct cmp
 int ShortestPath(vector<unordered_map<int, int>> &edge, int start, int end)
 {
 	int n = edge.size();
-	vector<int> distance(0, 0x7FFFFFFF);
+	vector<int> distance(n, 0x7FFFFFFF);
 	priority_queue<pair<int, int>, vector<pair<int, int>>, cmp> pq;
 	pq.push({ start,0 });
 	while (!pq.empty())
