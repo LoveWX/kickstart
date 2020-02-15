@@ -3,7 +3,7 @@
 #include <vector>
 using namespace std;
 
-string snum[] = { "zero ","one ","three ","four ","five ","six ","seven ","eight ","nine " };
+string snum[] = { "zero ","one ","two ","three ","four ","five ","six ","seven ","eight ","nine " };
 string smulti[] = { "","","double ","triple ","quadruple ","quintuple ","sextuple ","septuple ","octuple ","nonuple ","decuple " };
 
 string readnum(string &s, int start, int end)
