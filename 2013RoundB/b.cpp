@@ -14,6 +14,16 @@ void calcx(vector<vector<int>> &vp, vector<long long> &ans)
 	{
 		sum += vi[0] - t;
 	}
+	//vector<long long> vsum(n);
+	//vsum[0] = sum;
+	//for (int i = 1; i < n; ++i)
+	//{
+	//	vsum[i] = vsum[i - 1] + (long long)(vp[i][0] - vp[i - 1][0])*(i + i - n);
+	//}
+	//for (int i = 0; i < n; ++i)
+	//{
+	//	ans[vp[i][2]] = vsum[i];
+	//}
 	ans[vp[0][2]] = sum;
 	for (int i = 1; i < n; ++i)
 	{
@@ -33,6 +43,16 @@ void calcy(vector<vector<int>> &vp, vector<long long> &ans)
 	{
 		sum += vi[1] - t;
 	}
+	//vector<long long> vsum(n);
+	//vsum[0] = sum;
+	//for (int i = 1; i < n; ++i)
+	//{
+	//	vsum[i] = vsum[i - 1] + (long long)(vp[i][1] - vp[i - 1][1])*(i + i - n);
+	//}
+	//for (int i = 0; i < n; ++i)
+	//{
+	//	ans[vp[i][2]] = vsum[i];
+	//}
 	ans[vp[0][2]] = sum;
 	for (int i = 1; i < n; ++i)
 	{
