@@ -40,6 +40,107 @@ bool LinkedRed(vector<string> &grid)
     return linked;
 }
 
+int findr(vector<int> &parent, int x)
+{
+    int r = x, i = x, j;
+    for (; r != parent[r]; r = parent[r]);
+    while (i != r)
+    {
+        j = parent[i];
+        parent[i] = r;
+        i = j;
+    }
+    return r;
+}
+
+void unionr(vector<int> &parent, vector<int> &rank, int x, int y)
+{
+    int rx = findr(parent, x), ry = findr(parent, y);
+    if (rank[rx] < rank[ry])
+    {
+        parent[rx] = ry;
+    }
+    else if (rank[rx] > rank[ry])
+    {
+        parent[ry] = rx;
+    }
+    else
+    {
+        parent[ry] = rx;
+        rank[rx] += 1;
+    }
+}
+
+bool IsLinked(vector<string> &grid, char ch)
+{
+    linked = false;
+    int nn = n*n;
+    vector<int> parent(nn + 2), rank(nn + 2, 0);
+    for (int i = 0; i < nn + 2; ++i)
+    {
+        parent[i] = i;
+    }
+    if (ch == 'R')
+    {
+        for (int j = 0; j < n; ++j)
+        {
+            if (grid[0][j] == 'R')
+            {
+                unionr(parent, rank, nn, j);
+            }
+            if (grid[n - 1][j] == 'R')
+            {
+                unionr(parent, rank, nn + 1, nn - n + j);
+            }
+        }
+    }
+    else
+    {
+        for (int i = 0; i < n; ++i)
+        {
+            if (grid[i][0] == 'B')
+            {
+                unionr(parent, rank, nn, i*n);
+            }
+            if (grid[i][n - 1] == 'B')
+            {
+                unionr(parent, rank, nn + 1, i*n + n - 1);
+            }
+        }
+    }
+    for (int i = 0; i < n; ++i)
+    {
+        for (int j = 1; j < n; ++j)
+        {
+            if (grid[i][j - 1] == ch && grid[i][j] == ch)
+            {
+                unionr(parent, rank, i*n + j - 1, i*n + j);
+            }
+        }
+    }
+    for (int j = 0; j < n; ++j)
+    {
+        for (int i = 1; i < n; ++i)
+        {
+            if (grid[i - 1][j] == ch && grid[i][j] == ch)
+            {
+                unionr(parent, rank, (i - 1)*n + j, i*n + j);
+            }
+        }
+    }
+    for (int i = 0; i < n - 1; ++i)
+    {
+        for (int j = 1; j < n; ++j)
+        {
+            if (grid[i + 1][j - 1] == ch && grid[i][j] == ch)
+            {
+                unionr(parent, rank, (i + 1)*n + j - 1, i*n + j);
+            }
+        }
+    }
+    return findr(parent, nn) == findr(parent, nn + 1);
+}
+
 void dfsBlue(vector<string> &grid, vector<vector<bool>> &visited, int x, int y)
 {
     if (linked) return;
@@ -97,7 +198,8 @@ int main()
                 break;
             }
             bool cutFound = false;
-            if (LinkedRed(grid))
+            //if (LinkedRed)
+            if (IsLinked(grid, 'R'))
             {
                 if (r < b) break;
                 for (int i = 0; i < n; ++i)
@@ -125,7 +227,8 @@ int main()
                 break;
             }
             cutFound = false;
-            if (LinkedBlue(grid))
+            //if (LinkedBlue)
+            if (IsLinked(grid, 'B'))
             {
                 if (b < r) break;
                 for (int i = 0; i < n; ++i)
