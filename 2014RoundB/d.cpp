@@ -91,3 +91,4 @@ int main()
 	}
 	return 0;
 }
+https://stackoverflow.com/questions/26437223/dynamic-programming-calculating-kth-parentheses-sequence
