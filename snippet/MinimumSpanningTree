@@ -1,0 +1,38 @@
+//Prim算法的每一步都会为一棵生长中的树添加一条边，该树最开始只有一个顶点，然后会添加V-1个边。
+//每次总是添加生长中的树和树中除该生长的树以外的部分形成的切分的具有最小权值的横切边。
+//Prim算法的时间复杂度为O(E+VlogV)。
+struct cmp
+{
+    bool operator ()(const vector<int> &a,const vector<int> &b)
+    {
+        return a[1]==b[1] ? a[0]>b[0] : a[1]>b[1];
+    }
+};
+
+int MinimumSpanningTree(int n,vector<vector<vector<int>>> &edge)
+{
+    vector<bool> visited(n,false);
+    priority_queue<vector<int>,vector<vector<int>>,cmp> pq;
+    pq.push({0,0});//可从任意结点开始,这里从第0点开始
+    int count=0,ans=0;
+    while(count<n && !pq.empty())
+    {
+        int dst=pq.top()[0];
+        int dis=pq.top()[1];
+        pq.pop();
+        if(!visited[dst])
+        {
+            visited[dst]=true;
+            ans+=dis;//处理当前边
+            count++;
+            for(vector<int> &vi:edge[dst])
+            {
+                if(!visited[vi[0]])
+                {
+                    pq.push(vi);
+                }
+            }
+        }
+    }
+    return ans;
+}
