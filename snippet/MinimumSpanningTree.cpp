@@ -36,3 +36,5 @@ int MinimumSpanningTree(int n,vector<vector<vector<int>>> &edge)
     }
     return ans;
 }
+//按照边的权重顺序（从小到大）将边加入生成树中，但是若加入该边会与生成树形成环则不加入该边。直到树中含有V-1条边为止。
+//Prim算法的时间复杂度为O(E+VlogV)。
