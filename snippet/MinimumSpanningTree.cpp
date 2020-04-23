@@ -38,3 +38,27 @@ int MinimumSpanningTree(int n,vector<vector<vector<int>>> &edge)
 }
 //按照边的权重顺序（从小到大）将边加入生成树中，但是若加入该边会与生成树形成环则不加入该边。直到树中含有V-1条边为止。
 //Kruskal算法的时间复杂度为O(ElogE)。
+//可以利用并查集来查找是否成环：当边的两个顶点的根节点不同，则该边可以加入最小生成树。
+sort(connections.begin(),connections.end(),[](vector<int> &a,vector<int> &b){
+    return a[2]<b[2];
+});
+int ans=0;
+for(vector<int> &vi:connections)
+{
+    int rx=findr(vi[0]);
+    int ry=findr(vi[1]);
+    if(rx!=ry)
+    {
+        ans+=vi[2];
+        unionr(rx,ry);
+    }
+}
+int r=findr(1);
+for(int i=2;i<n;++i)
+{
+    if(findr(i)!=r)
+    {
+        return -1;
+    }
+}
+return ans;
