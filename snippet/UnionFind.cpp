@@ -13,7 +13,7 @@ int findr(int x)
 {
 	int r=x,i=x,j;
 	for(;r!=parent[r];r=parent[r]);
-	while(i!=r)
+	while(r!=parent[i])
 	{
 		j=parent[i];
 		parent[i]=r;
