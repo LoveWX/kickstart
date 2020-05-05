@@ -1,0 +1,25 @@
+  //Dijkstra算法求单元最短路径。从起点到终点的最短路径可在循环中提前返回
+  vector<vector<vector<int>>> edge;
+  void ShortestPathDijkstra(vector<int> &vdis,int src)
+  {
+      priority_queue<vector<int>,vector<vector<int>>,greater<vector<int>>> pq;
+      pq.push({0,src});
+      while(!pq.empty())
+      {
+          int dis=pq.top()[0];
+          int dst=pq.top()[1];
+          pq.pop();
+          if(dis>=vdis[dst])
+          {
+              continue;
+          }
+          vdis[dst]=dis;
+          for(vector<int> &vi:edge[dst])
+          {
+              if(dis+vi[1]<vdis[vi[0]])
+              {
+                  pq.push({dis+vi[1],vi[0]});
+              }
+          }
+      }
+  }
