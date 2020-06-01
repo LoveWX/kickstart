@@ -1,3 +1,52 @@
+class Solution {
+public:
+    int assignBikes(vector<vector<int>>& workers, vector<vector<int>>& bikes) {
+        int nw=workers.size();
+        int nb=bikes.size();
+        vector<vector<int>> dis(nw,vector<int>(nb));
+        for(int i=0;i<nw;++i)
+        {
+            for(int j=0;j<nb;++j)
+            {
+                dis[i][j]=abs(workers[i][0]-bikes[j][0])+abs(workers[i][1]-bikes[j][1]);
+            }
+        }
+        vector<map<int,int>> status(nw+1);
+        status[0][0]=0;
+        for(int iw=0;iw<nw;++iw)
+        {
+            map<int,int> &mcurr=status[iw];
+            map<int,int> &mnext=status[iw+1];
+            for(map<int,int>::iterator it=mcurr.begin();it!=mcurr.end();++it)
+            {
+                for(int i=0;i<nb;++i)
+                {
+                    int t=(1<<i);
+                    if((it->first & t)!=0)
+                    {
+                        continue;
+                    }
+                    t=(it->first | (1<<i));
+                    if(mnext.count(t)==0)
+                    {
+                        mnext[t]=it->second+dis[iw][i];
+                    }
+                    else
+                    {
+                        mnext[t]=min(mnext[t],it->second+dis[iw][i]);
+                    }
+                }
+            }
+        }
+        int ans=INT_MAX;
+        for(map<int,int>::iterator it=status.back().begin();it!=status.back().end();++it)
+        {
+            ans=min(ans,it->second);
+        }
+        return ans;
+    }
+};
+
 给定一个单词集合 （没有重复），找出其中所有的 单词方块 。
 
 一个单词序列形成了一个有效的单词方块的意思是指从第 k 行和第 k 列 (0 ≤ k < max(行数, 列数)) 来看都是相同的字符串。
