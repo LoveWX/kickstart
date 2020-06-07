@@ -11,36 +11,36 @@ vector<int> parent;
 vector<int> rank;
 int findr(int x)
 {
-	int r=x,i=x,j;
-	for(;r!=parent[r];r=parent[r]);
-	while(r!=parent[i])
-	{
-		j=parent[i];
-		parent[i]=r;
-		i=j;
-	}
-	return r;
+    int r=x,i=x,j;
+    for(;r!=parent[r];r=parent[r]);
+    while(r!=parent[i])
+    {
+        j=parent[i];
+        parent[i]=r;
+        i=j;
+    }
+    return r;
 }
 void unionr(int x,int y)
 {
-	int rx=findr(x),ry=findr(y);
-	if(rank[rx]<rank[ry])
-	{
-		parent[rx]=ry;
-	}
-	else if(rank[rx]>rank[ry])
-	{
-		parent[ry]=rx;
-	}
-	else
-	{
-		parent[ry]=rx;
-		rank[rx]+=1;
-	}
+    int rx=findr(x),ry=findr(y);
+    if(rank[rx]<rank[ry])
+    {
+        parent[rx]=ry;
+    }
+    else if(rank[rx]>rank[ry])
+    {
+        parent[ry]=rx;
+    }
+    else
+    {
+        parent[ry]=rx;
+        rank[rx]+=1;
+    }
 }
 parent.assign(n,0);
 for(int i=1;i<n;++i)
 {
-	parent[i]=i;
+    parent[i]=i;
 }
 rank.assign(n,0);
