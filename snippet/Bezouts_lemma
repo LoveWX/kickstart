@@ -1,4 +1,15 @@
-在数论中，裴蜀等式（英语：Bézout's identity）或裴蜀定理（Bézout's lemma）是一个关于最大公约数（或最大公约式）的定理。裴蜀定理得名于法国数学家艾蒂安·裴蜀，说明了对任何整数{\displaystyle a}a、{\displaystyle b}b和{\displaystyle m}m，关于未知数{\displaystyle x}x和{\displaystyle y}y的线性丢番图方程（称为裴蜀等式）：
+在数论中，裴蜀等式（Bézout's identity）或裴蜀定理（Bézout's lemma）是一个关于最大公约数（或最大公约式）的定理。
+对任何整数a、b和m，关于未知数x和y的线性丢番图方程（称为裴蜀等式）：
+    ax+by=m
+有整数解时当且仅当m是a及b的最大公约数d的倍数。
+裴蜀等式有解时必然有无穷多个整数解，每组解x、y都称为裴蜀数，可用扩展欧几里得算法求得。
+特别来说，方程 ax+by=1 有整数解当且仅当整数a和b互素。
 
-{\displaystyle ax+by=m}ax+by=m
-有整数解时当且仅当{\displaystyle m}m是{\displaystyle a}a及{\displaystyle b}b的最大公约数{\displaystyle d}d的倍数。裴蜀等式有解时必然有无穷多个整数解，每组解{\displaystyle x}x、{\displaystyle y}y都称为裴蜀数，可用扩展欧几里得算法求得。
+设d是a和b的最大公约数，在方程 ax+by=m 中，m=m0*d，如果有解，则方程有无穷多组解：
+x=(m0*x0)+k*b/d
+y=(m0*y0)-k*a/d
+其中k为任意整数,(x0,y0)为方程 ax+by=d 的一个解，可用辗转相除法求得
+
+多个整数间的裴蜀定理
+设a1,...,an为n个整数，d是它们的最大公约数，那么存在整数x1,...,xn使得x1*a1+...+xn*an=d。当然，x1*a1+...+xn*an=md也有解。
+特别地，如果a1,...,an互质（不是两两互质），那么存在整数x1,...,xn使得x1*a1+...+xn*an=1。
