@@ -1,0 +1,4 @@
+在数论中，裴蜀等式（英语：Bézout's identity）或裴蜀定理（Bézout's lemma）是一个关于最大公约数（或最大公约式）的定理。裴蜀定理得名于法国数学家艾蒂安·裴蜀，说明了对任何整数{\displaystyle a}a、{\displaystyle b}b和{\displaystyle m}m，关于未知数{\displaystyle x}x和{\displaystyle y}y的线性丢番图方程（称为裴蜀等式）：
+
+{\displaystyle ax+by=m}ax+by=m
+有整数解时当且仅当{\displaystyle m}m是{\displaystyle a}a及{\displaystyle b}b的最大公约数{\displaystyle d}d的倍数。裴蜀等式有解时必然有无穷多个整数解，每组解{\displaystyle x}x、{\displaystyle y}y都称为裴蜀数，可用扩展欧几里得算法求得。
