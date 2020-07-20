@@ -22,7 +22,7 @@ struct TrieNode
 };
 
 //插入操作
-//TrieNode(root,s,0);
+//insert(root,s,0);
 void insert(TrieNode *curr,string &s,int pos)
 {
 	if(pos==s.length())
