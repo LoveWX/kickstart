@@ -1,0 +1,81 @@
+单调栈
+单调栈是一种栈中元素保持单调的栈。
+每当新元素入栈时，需要从栈顶开始弹出（新元素入栈后）破坏栈单调性的元素，再将新元素入栈，以保持栈的单调性。
+一般地，需要在入栈或者出栈时处理元素信息。
+但是先入栈元素看不到未入栈元素，所以出栈时操作更方便。
+因为需要计算的即为栈中某元素和导致其出栈的新元素之间的关系。
+由于待处理的元素入栈1次出栈1次，所以时间复杂度为O(n)
+
+单调栈的一般写法为：
+for(int i = 0; i < A.size(); ++i)
+{
+    while(!stk.empty() && A[stk.top()] > A[i])
+    {
+        // do something when getting into stack
+        stk.pop();
+    }
+    // do something when getting out of stack
+    stk.push(i);
+}
+
+
+例如，求数组A中每个元素右侧第一个比该元素更小的元素，找不到时用-1表示
+vector<int> nextLess(A.size(),-1);
+stack<int> stk;
+for(int i=0;i<A.size();++i)
+{
+    while(!stk.empty() && A[stk.top()]>A[i])
+    {
+        nextLess[stk.top()]=i;
+        stk.pop();
+    }
+    stk.push(i);
+}
+求数组A中每个元素左侧第一个比该元素更小的元素，找不到时用-1表示
+vector<int> prevLess(A.size(),-1);
+stack<int> stk;
+for(int i=0;i<A.size();++i)
+{
+    while(!stk.empty() && A[stk.top()]>A[i])
+    {
+        int j=stk.top();
+        stk.pop();
+        prevLess[j]=(stk.empty() ? -1 : stk.top());
+    }
+    stk.push(i);
+}
+也可以将每个元素的处理放到入栈时：
+vector<int> prevLess(A.size(),-1);
+stack<int> stk;
+for(int i=0;i<A.size();++i)
+{
+    while(!stk.empty() && A[stk.top()]>A[i])
+    {
+        stk.pop();
+    }
+    prevLess[i]=(stk.empty() ? -1 : stk.top());
+    stk.push(i);
+}
+为了处理的方便，栈中保存元素的下标而不是元素的值
+也可以从右至左处理数组，这样就化归为“右侧第1个更小”的问题了
+vector<int> prevLess(A.size(),-1);
+stack<int> stk;
+for(int i=A.size()-1;i>=0;--i)
+{
+    while(!stk.empty() && A[i]<A[stk.top()])
+    {
+        prevLess[stk.top()]=i;
+        stk.pop();
+    }
+    stk.push(i);
+}
+
+栈中的元素是单调增还是单调减，由需要找的关系是“更大”还是“更小”决定
+当需要为每个元素找到第一个更小的元素时，单调栈中需要保持单调递增，即栈顶最大而栈底最小。
+这样新元素到达栈顶元素出栈时，栈顶元素即找到了“更小”的元素。
+反之，当需要为每个元素找到第一个更大的元素时，单调栈中需要保持单调递减，即栈顶最小而栈底最大。
+
+另外，单调栈中已经入栈的元素既然已经“有序”，自然也包含了“更大”或“更小”的关系。
+如前例，当求元素右侧第1个更小的元素时，栈顶元素左侧第1个更小的元素，就是栈顶元素出栈后新的栈顶元素。
+所以，单调栈不仅可以求解栈顶元素和新元素的二元关系，
+也可以求解栈次顶元素、栈顶元素、新元素的三元关系，而从栈次顶元素->栈顶元素->新元素是以栈顶元素为区间最值的。
