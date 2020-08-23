@@ -1,0 +1,70 @@
+树状数组，又名二元索引树(BIT, Binary Indexed Tree)。
+其初衷是解决数据压缩里的累积频率（Cumulative Frequency）的计算问题，现多用于高效计算数列的前缀和， 区间和。
+它可以以O(logn)的时间得到任意前缀和，并同时支持在O(logn)时间内支持动态单点值的修改。空间复杂度O(n)。
+树状数组也可以近似地看做线段树去掉右子树所得。
+由于使用到了二进制数的特性，树状数组的下标是从1开始的。
+int n; // 数组长度
+vector<int> bit(n+1,0);
+
+1.基本思想
+如同前缀和一样，如果希望更快地随机查询，需要辅助记录某些区间的总和信息。
+而每个整数都能表示为一些2的幂次方的和。可以在辅助数组中，按照下标中的1所指示的位置多记录信息。
+
+2.需要快速分离出idx(二进制)中的各个1所代表的数。
+lowbit(x)可以快速求出二进制数中最低的1所代表的数。如lowbit(6)=2
+int lowbit(int x)
+{
+    return x & -x;
+}
+当然也有其它写法，如 x & (x^(x-1)) 和 x ^ (x&(x-1))。
+这样，可以使每个位置i都对应原数组中对应位置及其前面共计lowbit(i)个数的和
+即 bit[i]=A[i-lowbit(i)+1]+...+A[i]
+
+3.查询前缀和时，只需要将特定的logn个bit的元素相加即可
+这些bit元素正好覆盖区间[1,n]，恰好对应于i的各个为1的二进制位。如sum(1,6)=bit[4]+bit[6]
+这样通过将i依次减掉lowbit(i)即可得到前一段区间对应的结点
+// 查询前缀和,即sum(1,idx)
+int prefixSum(int idx)
+{
+    int sum=0;
+    while(idx!=0)
+    {
+        sum+=bit[idx];
+        idx-=(idx & -idx);
+    }
+    return sum;
+}
+
+4.更新原数组值时更新bit，除了更新idx对应结点外，还需要更新其所有祖先结点
+而idx+lowbit(idx)即为idx的父结点，依次计算直到更新完范围内所有祖先结点
+void update(int idx,int diff)
+{
+    while(idx<=n)
+    {
+        bit[idx]+=diff;
+        idx+=(idx & -idx);
+    }
+}
+
+5.查询区间和，直接用前缀和即可计算
+int rangeSum(int idx1,int idx2)
+{
+    return prefixSum(idx2)-prefixSum(idx1-1);
+}
+
+6.初始化bit，可以通过定义式bit[i]=A[i-lowbit(i)+1]+...+A[i]和prefixSum来求和
+也可以通过“结点的子结点下标都更小”这个性质，在求子结点值时累加到父结点上
+void init()
+{
+    for(int i=1;i<=n;++i)
+    {
+        bit[i]+=A[i-1];
+        int j=i+(i & -i);
+        if(j<=n)
+        {
+            bit[j]+=bit[i];
+        }
+    }
+}
+
+树状数组从普通数组构建需要O(n)，查询前缀和O(logn)，单点更新O(logn)，区间更新O(n)，空间O(n)
