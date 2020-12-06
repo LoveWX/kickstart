@@ -1,0 +1,17 @@
+Problem A. Password Attacker
+
+
+Problem B. Sherlock and Watson Gym Secrets
+给定非负整数A,B和正整数N,K，求使(i^A+j^B)%K==0的(i,j)数对的个数，其中1<=i<=N,1<=j<=N,i!=j
+1.(i^a)%K容易求得，注意k==1时该式值为0
+2.注意到((i+K)^a)%K==(i^a)%K，所以可以对于%K的每一种余数d，计算在1<=i<=N中有多少个数满足(i^A)%K==d，有多少个数满足(i^B)%K==d
+只需要计算1<=i<=K范围中的数即可计算。
+3.对于每种(i^A)%K==d的i，和(j^B)%K==K-d的j可以组合起来。
+注意需要单独计算 (i^A)%K==0 && (j^B)%K==0 的情况。
+4.对于i==j的情况需要排除，即需要减去(i^A+i^B)%K==0的情况。
+注意到((i+K)^A+(i+K)^B)%K==(i^A+i^B)%K，可以用类似的方法求得。
+
+Problem C. Card Game
+
+
+Problem D. Sums of Sums
