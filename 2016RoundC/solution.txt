@@ -1,8 +1,12 @@
-Problem A. Sudoku Checker.txt
+Problem A. Monster Path
+每个格点上如果有小怪兽吸引器则小怪兽出现概率为P，否则为Q。当一个格点遇到过小怪兽后就不会再遇到。
+求从指定点出发给定步数的路径能遇到的小怪兽数量的数学期望的最大值。
+第i次(i>=0)访问某格点，遇到小怪兽的数学期望E(A)=P*(1-P)^i
+所以dfs遍历可能的路径，累加路径上的每个数学期望找到整个路径的最大值。
 
-
-Problem B. Meet and party
-
+Problem B. Safe Squares
+求给定的01矩阵中全为0的方阵的数量。
+DP求出每个位置到上方/左侧的连续的最长0串的长度，结合其左上角位置的结果，即可求得当前位置的结果。
 
 Problem C. Evaluation
 给定一些表达式，每个表达式为将一个函数的结果赋值给一个变量，函数可能有0个或多个变量作为入参。
@@ -11,5 +15,5 @@ Problem C. Evaluation
 注意所有变量只能由函数来确定，包括无参函数。所以可以将无参函数视为入参为空串的函数，遍历的起点也从空串对应的结点开始。
 
 
-Problem D. Dragon Maze
+Problem D. Soldiers
 
