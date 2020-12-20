@@ -1,0 +1,20 @@
+Problem A. 
+
+
+Problem B. 
+
+Problem C. Two Cubes
+在三维空间中给定一些球体，球心和半径均为整数。如果需要用两个正方体（边长为相等的整数，边平行于坐标轴）可以包住所有的球体，求正方体的最小边长。
+正方体边长越小越不可能包住所有球体，越大越有可能，所以可以使用二分查找正方体边长。注意查找上界为4*10^8
+二维平面中，用给定边长的正方形来包住圆，存在最小的能包住所有圆的正方形，把两个正方形放在这个最小正方形的对角时最有可能包住圆，此时检查2对正方形即可。
+三维空间中，用给定边长的正方体来包住球，存在最小的能包住所有球的正方体，而空间中该正方体的“对角”有4对，分别检查这4对正方体即可。
+这4对顶点为：
+(xmin,ymin,zmin) & (xmax,ymax,zmax)
+(xmax,ymin,zmin) & (xmin,ymax,zmax)
+(xmin,ymax,zmin) & (xmax,ymin,zmax)
+(xmax,ymax,zmin) & (xmin,ymin,zmax)
+设此时正方体边长为len，则这4对正方体为：
+(xmin,ymin,zmin) ~ (xmin+len,ymin+len,zmin+len) & (xmax-len,ymax-len,zmax-len) ~ (xmax,ymax,zmax)
+(xmax-len,ymin,zmin) ~ (xmax,ymin+len,zmin+len) & (xmin,ymax-len,zmax-len) ~ (xmin+len,ymax,zmax)
+(xmin,ymax-len,zmin) ~ (xmin+len,ymax,zmin+len) & (xmax-len,ymin,zmax-len) ~ (xmax,ymin+len,zmax)
+(xmax-len,ymax-len,zmin) ~ (xmax,ymax,zmin+len) & (xmin,ymin,zmax-len) ~ (xmin+len,ymin+len,zmax)
