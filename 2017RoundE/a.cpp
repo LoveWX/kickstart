@@ -9,10 +9,10 @@ long long presum[5000];
 
 int main()
 {
-	int ncase;
-	cin >> ncase;
-	for (int icase = 1; icase <= ncase; ++icase)
-	{
+    int ncase;
+    cin >> ncase;
+    for (int icase = 1; icase <= ncase; ++icase)
+    {
         int n, t;
         map<int, int> m;
         for (cin >> n; n > 0; --n)
@@ -50,6 +50,6 @@ int main()
             ans += num[i] * (num[i] - 1) * (num[i] - 2) / 6 * (presum[t] - num[i]);
         }
         cout << "Case #" << icase << ": " << ans << endl;
-	}
-	return 0;
+    }
+    return 0;
 }
