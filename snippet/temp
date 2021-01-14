@@ -1,1 +1,94 @@
 
+#include <iostream>
+#include <array>
+#include <cmath>
+#include <iomanip>
+using namespace std;
+
+int p[9];
+array<double, 3> pa, pb, pc;
+double ab, bc, ac;
+
+inline double distance(array<double, 3> &a, array<double, 3> &b)
+{
+    return sqrt((a[0] - b[0])*(a[0] - b[0]) + (a[1] - b[1])*(a[1] - b[1]) + (a[2] - b[2])*(a[2] - b[2]));
+}
+
+bool OnOneLine()
+{
+    return false;
+}
+
+bool Covered2(double ab, double bc, double ca, double ra, double rb, double rc)
+{
+    double cosa = (ab*ab + ac*ac - bc*bc) / (2.0*ab*ac);
+    double xc = ac*cosa;
+    double yc = sqrt(ac*ac - xc*xc);
+    double cosp = (ab*ab + ra*ra - rb*rb) / (2.0*ab*ra);
+    double xp = ra*cosp;
+    double yp = sqrt(ra*ra - xp*xp);
+    double dd = sqrt((xc - xp)*(xc - xp) + (yc - yp)*(yc - yp));
+    return dd <= rc;
+}
+
+bool Covered1(array<double, 3> &a, double ra,
+    array<double, 3> &b, double rb,
+    array<double, 3> &c, double rc)
+{
+    double ab = distance(a, b);
+    double bc = distance(b, c);
+    double ca = distance(c, a);
+    if (ab > ra + rb || bc > rb + rc || ca > rc + ra)
+    {
+        return false;
+    }
+    return
+        Covered2(ab, bc, ca, ra, rb, rc) ||
+        Covered2(bc, ca, ab, rb, rc, ra) ||
+        Covered2(ca, ab, bc, rc, ra ,rb);
+}
+
+bool Covered(double R)
+{
+    return
+        Covered1(pa, R, pb, 3 * R, pc, 3 * R) ||
+        Covered1(pb, R, pa, 3 * R, pc, 3 * R) ||
+        Covered1(pc, R, pa, 3 * R, pb, 3 * R) ||
+        Covered1(pa, R, pb, R, pc, 5 * R) ||
+        Covered1(pa, R, pc, R, pb, 5 * R) ||
+        Covered1(pb, R, pc, R, pa, 5 * R);
+}
+
+int main()
+{
+	int ncase;
+	cin >> ncase;
+	for (int icase = 1; icase <= ncase; ++icase)
+	{
+        for (int i = 0; i < 9; ++i)
+        {
+            cin >> p[i];
+        }
+        pa = { p[0],p[1],p[2] };
+        pb = { p[3],p[4],p[5] };
+        pc = { p[6],p[7],p[8] };
+        ab = distance(pa, pb);
+        bc = distance(pb, pc);
+        ac = distance(pa, pc);
+        long long left = 1, right = max(ab, max(bc, ac))*1e8 + 2, mid;
+        while (left < right)
+        {
+            mid = (right - left) / 2 + mid;
+            if (Covered(mid*1e-8))
+            {
+                right = mid;
+            }
+            else
+            {
+                left = mid + 1;
+            }
+        }
+        cout << "Case #" << icase << ": " << fixed << setprecision(8) << left*1e-8 << endl;
+	}
+	return 0;
+}
