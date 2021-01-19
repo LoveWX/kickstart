@@ -1,85 +1,47 @@
-
 #include <iostream>
+#include <vector>
 #include <array>
-#include <cmath>
 #include <iomanip>
 using namespace std;
 
-int p[9];
-array<double, 3> pa, pb, pc;
-double ab, bc, ac;
+double eps = 1e-6;
+int N, P, H;
+int obstacle[10][2];
 
-inline double distance(array<double, 3> &a, array<double, 3> &b)
+double f(double R, double a, int xi, int yi, double x)
 {
-    return sqrt((a[0] - b[0])*(a[0] - b[0]) + (a[1] - b[1])*(a[1] - b[1]) + (a[2] - b[2])*(a[2] - b[2]));
+    return (x - xi)*(x - xi) + (a*x*(x - P) - yi)*(a*x*(x - P) - yi) - R*R;
 }
 
-bool OnOneLine()
+double f1(double R, double a, int xi, int yi, double x)
 {
-    return false;
+    return 2 * (x - xi) + 2 * a*(a*x*(x - P) - yi)*(2 * x - P);
 }
 
-bool Covered2(double ab, double bc, double ca, double ra, double rb, double rc)
+bool CheckA(double R, double a, int x, int y)
 {
-    double cosa = (ab*ab + ac*ac - bc*bc) / (2.0*ab*ac);
-    double xc = ac*cosa;
-    double yc = sqrt(ac*ac - xc*xc);
-    double cosp = (ab*ab + ra*ra - rb*rb) / (2.0*ab*ra);
-    double xp = ra*cosp;
-    double yp = sqrt(ra*ra - xp*xp);
-    double dd = sqrt((xc - xp)*(xc - xp) + (yc - yp)*(yc - yp));
-    return dd <= rc;
-}
-
-bool Covered1(array<double, 3> &a, double ra,
-    array<double, 3> &b, double rb,
-    array<double, 3> &c, double rc)
-{
-    double ab = distance(a, b);
-    double bc = distance(b, c);
-    double ca = distance(c, a);
-    if (ab > ra + rb || bc > rb + rc || ca > rc + ra)
+    int times = 100;
+    double x0 = x+R, x1;
+    do
     {
-        return false;
-    }
-    return
-        Covered2(ab, bc, ca, ra, rb, rc) ||
-        Covered2(bc, ca, ab, rb, rc, ra) ||
-        Covered2(ca, ab, bc, rc, ra ,rb);
+        x1 = x0 - f(R, a, x, y, x0) / f1(R, a, x, y, x0);
+        times -= 1;
+    } while (times != 0 && abs(x1 - x0) > eps);
+    return times != 0;
 }
 
-bool Covered(double R)
+vector<array<double, 2>> CalcA(double R, int rx, int ry)
 {
-    return
-        Covered1(pa, R, pb, 3 * R, pc, 3 * R) ||
-        Covered1(pb, R, pa, 3 * R, pc, 3 * R) ||
-        Covered1(pc, R, pa, 3 * R, pb, 3 * R) ||
-        Covered1(pa, R, pb, R, pc, 5 * R) ||
-        Covered1(pa, R, pc, R, pb, 5 * R) ||
-        Covered1(pb, R, pc, R, pa, 5 * R);
-}
-
-int main()
-{
-	int ncase;
-	cin >> ncase;
-	for (int icase = 1; icase <= ncase; ++icase)
-	{
-        for (int i = 0; i < 9; ++i)
-        {
-            cin >> p[i];
-        }
-        pa = { p[0],p[1],p[2] };
-        pb = { p[3],p[4],p[5] };
-        pc = { p[6],p[7],p[8] };
-        ab = distance(pa, pb);
-        bc = distance(pb, pc);
-        ac = distance(pa, pc);
-        long long left = 1, right = max(ab, max(bc, ac))*1e8 + 2, mid;
+    vector<array<double, 2>> ans;
+    double upA = 4.0 * (H - R) / P / P / eps;
+    double midA = (double)ry / rx / (rx - P)/(-eps);
+    if (ry + R < H)
+    {
+        int left = midA, right = upA, mid;
         while (left < right)
         {
-            mid = (right - left) / 2 + mid;
-            if (Covered(mid*1e-8))
+            mid = (right - left) / 2 + left;
+            if (CheckA(R, -mid*eps, rx, ry))
             {
                 right = mid;
             }
@@ -88,7 +50,77 @@ int main()
                 left = mid + 1;
             }
         }
-        cout << "Case #" << icase << ": " << fixed << setprecision(8) << left*1e-8 << endl;
+        if (left < upA)
+        {
+            ans.push_back({ -upA*eps, -left*eps });
+        }
+    }
+    if (ry - R >= 0)
+    {
+        int left = 0, right = midA, mid;
+        while (left < right)
+        {
+            mid = (right - left) / 2 + left;
+            if (CheckA(R, -mid*eps, rx, ry))
+            {
+                left = mid + 1;
+            }
+            else
+            {
+                right = mid;
+            }
+        }
+        ans.push_back({ -(left - 1)*eps,0 });
+    }
+    return ans;
+}
+
+bool CheckR(double R)
+{
+    vector<array<double, 2>> tans = CalcA(R, obstacle[0][0], obstacle[0][1]);
+    for (int i = 1; i < N && !tans.empty(); ++i)
+    {
+        vector<array<double, 2>> va = move(tans);
+        vector<array<double, 2>> vb = CalcA(R, obstacle[i][0], obstacle[i][1]);
+        for (array<double, 2> &a : va)
+        {
+            for (array<double, 2> &b : vb)
+            {
+                if (a[0] <= b[1] && b[0] <= a[1])
+                {
+                    tans.push_back({ max(a[0],b[0]),min(a[1],b[1]) });
+                }
+            }
+        }
+    }
+    return !tans.empty();
+}
+
+int main()
+{
+	int ncase;
+	cin >> ncase;
+	for (int icase = 1; icase <= ncase; ++icase)
+	{
+        cin >> N >> P >> H;
+        for (int i = 0; i < N; ++i)
+        {
+            cin >> obstacle[i][0] >> obstacle[i][1];
+        }
+        int left = 1, right = 1e9, mid;
+        while (left < right)
+        {
+            mid = (right - left) / 2 + left;
+            if (CheckR(mid*eps))
+            {
+                left = mid + 1;
+            }
+            else
+            {
+                right = mid;
+            }
+        }
+        cout << "Case #" << icase << ": " << fixed << setprecision(6) << (left - 1)*eps << endl;
 	}
 	return 0;
 }
