@@ -40,7 +40,7 @@ vector<array<double, 2>> CalcA(double R, int rx, int ry)
         int left = midA, right = upA, mid;
         while (left < right)
         {
-            mid = (right - left) / 2 + left;
+            mid = (right - left) / 2 + left;//271852
             if (CheckA(R, -mid*eps, rx, ry))
             {
                 right = mid;
@@ -50,7 +50,7 @@ vector<array<double, 2>> CalcA(double R, int rx, int ry)
                 left = mid + 1;
             }
         }
-        if (left < upA)
+        if (left < (int)upA)
         {
             ans.push_back({ -upA*eps, -left*eps });
         }
