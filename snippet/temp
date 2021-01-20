@@ -4,7 +4,6 @@
 #include <iomanip>
 using namespace std;
 
-double eps = 1e-6;
 int N, P, H;
 int obstacle[10][2];
 
@@ -20,10 +19,12 @@ double f1(double R, double a, int xi, int yi, double x)
 
 bool CheckA(double R, double a, int x, int y)
 {
-    int times = 100;
-    double x0 = x+R, x1;
+    static const double eps = 1e-8;
+    int times = 1000;
+    double x0, x1=0;
     do
     {
+        x0 = x1;
         x1 = x0 - f(R, a, x, y, x0) / f1(R, a, x, y, x0);
         times -= 1;
     } while (times != 0 && abs(x1 - x0) > eps);
@@ -32,28 +33,27 @@ bool CheckA(double R, double a, int x, int y)
 
 vector<array<double, 2>> CalcA(double R, int rx, int ry)
 {
+    static const double eps = 1e-6;
     vector<array<double, 2>> ans;
+    double upbound = 4.0 * H / P / P / eps;
     double upA = 4.0 * (H - R) / P / P / eps;
     double midA = (double)ry / rx / (rx - P)/(-eps);
-    if (ry + R < H)
+    int left = midA, right = upbound, mid;
+    while (left < right)
     {
-        int left = midA, right = upA, mid;
-        while (left < right)
+        mid = (right - left) / 2 + left;
+        if (CheckA(R, -mid*eps, rx, ry))
         {
-            mid = (right - left) / 2 + left;//271852
-            if (CheckA(R, -mid*eps, rx, ry))
-            {
-                right = mid;
-            }
-            else
-            {
-                left = mid + 1;
-            }
+            right = mid;
         }
-        if (left < (int)upA)
+        else
         {
-            ans.push_back({ -upA*eps, -left*eps });
+            left = mid + 1;
         }
+    }
+    if (left/4*eps*P*P+R<H)
+    {
+        ans.push_back({ -upA*eps, -left*eps });
     }
     if (ry - R >= 0)
     {
@@ -107,11 +107,14 @@ int main()
         {
             cin >> obstacle[i][0] >> obstacle[i][1];
         }
+        bool t2 = CheckR(3.238742);
+        bool t1 = CheckR(3.238741);
+        bool t0 = CheckR(3.238740);
         int left = 1, right = 1e9, mid;
         while (left < right)
         {
             mid = (right - left) / 2 + left;
-            if (CheckR(mid*eps))
+            if (CheckR(mid*1e-6))
             {
                 left = mid + 1;
             }
@@ -120,7 +123,7 @@ int main()
                 right = mid;
             }
         }
-        cout << "Case #" << icase << ": " << fixed << setprecision(6) << (left - 1)*eps << endl;
+        cout << "Case #" << icase << ": " << fixed << setprecision(6) << (left - 1)*1e-6 << endl;
 	}
 	return 0;
 }
