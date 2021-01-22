@@ -2,6 +2,7 @@
 #include <vector>
 #include <array>
 #include <iomanip>
+#include <algorithm>
 using namespace std;
 
 int N, P, H;
@@ -19,7 +20,7 @@ double f1(double R, double a, int xi, int yi, double x)
 
 bool CheckA(double R, double a, int x, int y)
 {
-    static const double eps = 1e-8;
+    static const double eps = 1e-9;
     int times = 1000;
     double x0, x1=0;
     do
@@ -31,9 +32,9 @@ bool CheckA(double R, double a, int x, int y)
     return times != 0;
 }
 
-vector<array<double, 2>> CalcA(double R, int rx, int ry)
+vector<array<double, 2>> CalcA0(double R, int rx, int ry)
 {
-    static const double eps = 1e-6;
+    static const double eps = 1e-8;
     vector<array<double, 2>> ans;
     double upbound = 4.0 * H / P / P / eps;
     double upA = 4.0 * (H - R) / P / P / eps;
@@ -44,14 +45,14 @@ vector<array<double, 2>> CalcA(double R, int rx, int ry)
         mid = (right - left) / 2 + left;
         if (CheckA(R, -mid*eps, rx, ry))
         {
-            right = mid;
+            left = mid + 1;
         }
         else
         {
-            left = mid + 1;
+            right = mid;
         }
     }
-    if (left/4*eps*P*P+R<H)
+    if (left/4*eps*P*P+R<H && -upA<-left)
     {
         ans.push_back({ -upA*eps, -left*eps });
     }
@@ -63,25 +64,25 @@ vector<array<double, 2>> CalcA(double R, int rx, int ry)
             mid = (right - left) / 2 + left;
             if (CheckA(R, -mid*eps, rx, ry))
             {
-                left = mid + 1;
+                right = mid;
             }
             else
             {
-                right = mid;
+                left = mid + 1;
             }
         }
-        ans.push_back({ -(left - 1)*eps,0 });
+        ans.push_back({ -(left)*eps,0 });
     }
     return ans;
 }
 
-bool CheckR(double R)
+bool CheckR0(double R)
 {
-    vector<array<double, 2>> tans = CalcA(R, obstacle[0][0], obstacle[0][1]);
+    vector<array<double, 2>> tans = CalcA0(R, obstacle[0][0], obstacle[0][1]);
     for (int i = 1; i < N && !tans.empty(); ++i)
     {
         vector<array<double, 2>> va = move(tans);
-        vector<array<double, 2>> vb = CalcA(R, obstacle[i][0], obstacle[i][1]);
+        vector<array<double, 2>> vb = CalcA0(R, obstacle[i][0], obstacle[i][1]);
         for (array<double, 2> &a : va)
         {
             for (array<double, 2> &b : vb)
@@ -96,6 +97,70 @@ bool CheckR(double R)
     return !tans.empty();
 }
 
+array<double, 2> CalcA(double R, int rx, int ry)
+{
+    static const double eps = 1e-8;
+    array<double, 2> ans;
+    double upbound = 4.0 * H / P / P / eps;
+    // double upA = 4.0 * (H - R) / P / P / eps;
+    double centerA = (double)ry / rx / (rx - P)/(-eps);
+
+    long long left = centerA, right = upbound, mid;
+    while (left < right)
+    {
+        mid = (right - left) / 2 + left;
+        if (CheckA(R, -mid*eps, rx, ry))
+        {
+            left = mid + 1;
+        }
+        else
+        {
+            right = mid;
+        }
+    }
+    ans[1]=left*eps;
+
+    left = 0, right = centerA;
+    while (left < right)
+    {
+        mid = (right - left) / 2 + left;
+        if (CheckA(R, -mid*eps, rx, ry))
+        {
+            right = mid;
+        }
+        else
+        {
+            left = mid + 1;
+        }
+    }
+    if (left==0 && ry - R >= 0)
+    {
+        left+=1;
+    }
+    ans[0]=left*eps;
+    return ans;
+}
+
+bool CheckR(double R)
+{
+    vector<array<double, 2>> aInterval(N);
+    for(int i=0;i<N;++i)
+    {
+        aInterval[i]=CalcA(R, obstacle[i][0], obstacle[i][1]);
+    }
+    sort(aInterval.begin(),aInterval.end());
+    if(0<aInterval[0][0]) return true;
+    array<double, 2> ai=aInterval[0];
+    double upA = 4.0 * (H - R) / P / P;
+    for(int i=1;i<N;++i)
+    {
+        if(ai[1]<aInterval[i][0]) return true;
+        ai[0]=min(ai[0],aInterval[i][0]);
+        ai[1]=max(ai[1],aInterval[i][1]);
+    }
+    return ai[1]<upA;
+}
+
 int main()
 {
 	int ncase;
@@ -107,9 +172,6 @@ int main()
         {
             cin >> obstacle[i][0] >> obstacle[i][1];
         }
-        bool t2 = CheckR(3.238742);
-        bool t1 = CheckR(3.238741);
-        bool t0 = CheckR(3.238740);
         int left = 1, right = 1e9, mid;
         while (left < right)
         {
