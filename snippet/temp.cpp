@@ -189,3 +189,56 @@ int main()
 	}
 	return 0;
 }
+#include <iostream>
+#include <algorithm>
+#include <numeric>
+#include <iomanip>
+#include <cmath>
+using namespace std;
+
+int n;
+double x[10000];
+double y[10000];
+double w[10000];
+
+double Calc(double *a)
+{
+    sort(a, a + n);
+    double currW = -accumulate(w, w + n, 0.0);
+    double curr = 0.0;
+    for (int i = 1; i < n; ++i)
+    {
+        curr += abs(a[i] - a[0]) * w[i];
+    }
+    double ans = curr;
+    for (int i = 1; i < n; ++i)
+    {
+        currW += w[i] * 2;
+        curr += currW * (a[i] - a[i - 1]);
+        ans = min(ans, curr);
+    }
+    return ans;
+}
+
+int main()
+{
+    double sqrt2 = sqrt(2.0);
+	int ncase;
+	cin >> ncase;
+	for (int icase = 1; icase <= ncase; ++icase)
+	{
+        cin >> n;
+        for (int i = 0; i < n; ++i)
+        {
+            double xx, yy;
+            cin >> xx >> yy >> w[i];
+            x[i] = 0.5*(xx + yy);
+            y[i] = 0.5*(xx - yy);
+        }
+        double sumx = Calc(x);
+        double sumy = Calc(y);
+        cout << "Case #" << icase << ": " << fixed << setprecision(8) << (Calc(x) + Calc(y)) << endl;
+        //cout << "Case #" << icase << ": " << fixed << setprecision(8) << Calc(x) + Calc(y) << endl;
+	}
+	return 0;
+}
