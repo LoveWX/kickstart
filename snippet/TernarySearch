@@ -1,0 +1,23 @@
+二分法要求区间内函数单调不增或单调不减。对于单峰函数，二分法并不适用。虽然可以通过求导得到极值点分割为两个单调区间求解，但是很多情况下无法求导。
+这种情况下，可以使用三分法求解。三分法(Ternary Search)用于求单峰区间内的极值点。
+1.设区间为[left,right]，则求得2个三分点：
+mid1=left+(right-left)/3
+mid2=left+(right-left)/3*2
+2.比较mid1和mid2谁更靠近极值，不靠近极值点的一段(原长三分之一)不会包含极值点，可以收缩端点，使得长度变为三分之二。
+3.直到[left,right]表示的长度足够小。这时left or right即为极值点。
+
+const double eps=1e-8;
+double left,right;
+while(right-left>eps)
+{
+    double mid1=left+(right-left)/3.0;
+    double mid2=left+(right-left)/1.5;
+    if(f(mid1)<f(mid2)) // there is a minimum value in interval
+    {
+        right=mid2;
+    }
+    else
+    {
+        left=mid1;
+    }
+}
