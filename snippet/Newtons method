@@ -1,6 +1,26 @@
-首先，选择一个接近函数{\displaystyle f(x)}f(x)零点的{\displaystyle x_{0}}x_{0}，计算相应的{\displaystyle f(x_{0})}f(x_0)和切线斜率{\displaystyle f'(x_{0})}f'(x_0)（这里{\displaystyle f'}f'表示函数{\displaystyle f}f的导数）。然后我们计算穿过点{\displaystyle (x_{0},f(x_{0}))}(x_{0},f(x_{0}))并且斜率为{\displaystyle f'(x_{0})}f'(x_0)的直线和{\displaystyle x}x轴的交点的{\displaystyle x}x坐标，也就是求如下方程的解：
+牛顿法（Newton's method）又称为牛顿-拉弗森方法（Newton-Raphson method），它是一种在实数域和复数域上近似求解方程的方法。
+方法使用函数f(x)的泰勒级数的前面几项来寻找方程f(x)=0的根。
+首先，选择一个接近函数f(x)零点的x0，计算相应的f(x0)和切线斜率f'(x0)。
+然后，计算穿过点(x0,f(x0))并且斜率为f'(x0)的直线和x轴的交点的x坐标，也就是求如下方程的解：
+0=(x-x0)*f'(x0)+f(x0)
+将新求得的点的x坐标命名为x1，通常x1会比x0更接近方程f(x)=0的解。因此我们现在可以利用x1开始下一轮迭代。迭代公式可化简为如下所示：
+xn+1=xn-f(xn)/f'(xn)
+牛顿迭代法的二次收敛必须满足1.f'(x)!=0; 2.在根a左右一定范围[a − r, a + r]内，f(x)的二阶导数f''(x)连续; 3.x0足够接近根a
+一般来说，牛顿迭代法是二次收敛，每次迭代有效数字个数翻倍，因此可以很快求出近似解。
+也可以设置较大的迭代次数，迭代完如果依然没有收敛，说明方程f(x)=0无实数根。
+牛顿法也被用于求函数的极值。由于函数取极值的点处的导数值为零，故可用牛顿法求导函数的零点。
 
-{\displaystyle 0=(x-x_{0})\cdot f'(x_{0})+f(x_{0})}{\displaystyle 0=(x-x_{0})\cdot f'(x_{0})+f(x_{0})}
-我们将新求得的点的{\displaystyle x}x坐标命名为{\displaystyle x_{1}}x_1，通常{\displaystyle x_{1}}x_1会比{\displaystyle x_{0}}x_{0}更接近方程{\displaystyle f(x)=0}f(x)=0的解。因此我们现在可以利用{\displaystyle x_{1}}x_1开始下一轮迭代。迭代公式可化简为如下所示：
-
-{\displaystyle x_{n+1}=x_{n}-{\frac {f(x_{n})}{f'(x_{n})}}}x_{{n+1}}=x_{n}-{\frac  {f(x_{n})}{f'(x_{n})}}
+bool NewtonMethod()
+{
+    static const double eps = 1e-10;
+    int times = 1000;
+    double x0, x1 = 0; // 初始值,也可由函数外传入
+    do
+    {
+        x0 = x1;
+        x1 = x0 - f(R, a, x, y, x0) / f1(R, a, x, y, x0);
+        times -= 1;
+    } while (times != 0 && abs(x1 - x0) > eps);
+    // return times != 0; // 迭代次数为0说明不收敛
+    return x1;
+}
