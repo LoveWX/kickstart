@@ -1,0 +1,6 @@
+首先，选择一个接近函数{\displaystyle f(x)}f(x)零点的{\displaystyle x_{0}}x_{0}，计算相应的{\displaystyle f(x_{0})}f(x_0)和切线斜率{\displaystyle f'(x_{0})}f'(x_0)（这里{\displaystyle f'}f'表示函数{\displaystyle f}f的导数）。然后我们计算穿过点{\displaystyle (x_{0},f(x_{0}))}(x_{0},f(x_{0}))并且斜率为{\displaystyle f'(x_{0})}f'(x_0)的直线和{\displaystyle x}x轴的交点的{\displaystyle x}x坐标，也就是求如下方程的解：
+
+{\displaystyle 0=(x-x_{0})\cdot f'(x_{0})+f(x_{0})}{\displaystyle 0=(x-x_{0})\cdot f'(x_{0})+f(x_{0})}
+我们将新求得的点的{\displaystyle x}x坐标命名为{\displaystyle x_{1}}x_1，通常{\displaystyle x_{1}}x_1会比{\displaystyle x_{0}}x_{0}更接近方程{\displaystyle f(x)=0}f(x)=0的解。因此我们现在可以利用{\displaystyle x_{1}}x_1开始下一轮迭代。迭代公式可化简为如下所示：
+
+{\displaystyle x_{n+1}=x_{n}-{\frac {f(x_{n})}{f'(x_{n})}}}x_{{n+1}}=x_{n}-{\frac  {f(x_{n})}{f'(x_{n})}}
