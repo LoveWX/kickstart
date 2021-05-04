@@ -14,7 +14,6 @@ struct SegmentTreeMax
 {
     int n;
     vector<int> maxv, tags;
-    int inf;
     SegmentTreeMax(int size)
     {
         n = size;
