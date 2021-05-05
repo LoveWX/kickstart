@@ -24,7 +24,7 @@
 每个操作实际上递归处理了从根结点到某些结点的数条路径，路径上每个结点表示区间都是前一个结点表示区间的子区间
 有一些修改操作的信息留在了"高层"结点中没有下发，因此查询操作遍历时应该利用尾递归的性质依次回收这些修改信息
 
-//用于处理加法的线段树，包含修改区间值和求区间最大值的操作
+//用于处理求区间最大值的线段树，包含修改区间值和求区间最大值的操作
 struct SegmentTreeMax
 {
     int n;
@@ -81,6 +81,87 @@ struct SegmentTreeMax
             ans = max(ans, Query((c << 1) + 2, mid + 1, r, L, R));
         }
         return ans + tags[c];
+    }
+    void Modify(int L, int R, int diff)
+    {
+        Modify(0, 0, n - 1, L, R, diff);
+    }
+    int Query(int L, int R)
+    {
+        return Query(0, 0, n - 1, L, R);
+    }
+};
+
+//用于处理求区间最大值的线段树，使用了push down，包含修改区间值和求区间最大值的操作
+struct SegmentTreeMax
+{
+    int n;
+    vector<int> maxv, tags;
+    SegmentTreeMax(int size)
+    {
+        n = size;
+        maxv.assign(n << 2, 0);
+        tags.assign(n << 2, 0);
+    }
+    SegmentTreeMax(vector<int> &v)
+    {
+        n = v.size();
+        maxv.assign(n << 2, 0);
+        tags.assign(n << 2, 0);
+        for (int i = 0; i < n; ++i)
+        {
+            Modify(i, i, v[i]);
+        }
+    }
+    void PushDown(int c)
+    {
+        if (tags[c] != 0)
+        {
+            maxv[(c << 1) + 1] += tags[c];
+            maxv[(c << 1) + 2] += tags[c];
+            tags[(c << 1) + 1] += tags[c];
+            tags[(c << 1) + 2] += tags[c];
+            tags[c] = 0;
+        }
+    }
+    void Modify(int c, int l, int r, int L, int R, int diff)
+    {
+        if (L <= l && r <= R)
+        {
+            maxv[c] += diff;
+            tags[c] += diff;
+            return;
+        }
+        PushDown(c);
+        int mid = (l + r) >> 1;
+        if (L <= mid)
+        {
+            Modify((c << 1) + 1, l, mid, L, R, diff);
+        }
+        if (R > mid)
+        {
+            Modify((c << 1) + 2, mid + 1, r, L, R, diff);
+        }
+        maxv[c] = max(maxv[(c << 1) + 1], maxv[(c << 1) + 2]);
+    }
+    int Query(int c, int l, int r, int L, int R)
+    {
+        if (L <= l && r <= R)
+        {
+            return maxv[c];
+        }
+        PushDown(c);
+        int mid = (l + r) >> 1;
+        int ans = INT_MIN;
+        if (L <= mid)
+        {
+            ans = max(ans, Query((c << 1) + 1, l, mid, L, R));
+        }
+        if (R > mid)
+        {
+            ans = max(ans, Query((c << 1) + 2, mid + 1, r, L, R));
+        }
+        return ans;
     }
     void Modify(int L, int R, int diff)
     {
