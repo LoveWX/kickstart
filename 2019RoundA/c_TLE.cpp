@@ -3,82 +3,112 @@
 #include <array>
 #include <algorithm>
 #include <climits>
+#include <list>
+#include <unordered_map>
 using namespace std;
 
-const int SIZE=30000;
+const int SIZE = 30000;
+
+struct Node
+{
+    int left;
+    int right;
+    list<array<int, 2>>::iterator itl;
+    list<array<int, 2>>::iterator itr;
+};
 
 int main()
 {
-    vector<array<int,3>> vq0,vq1;
-    vq0.reserve(SIZE);
-    vq1.reserve(SIZE);
+    vector<Node> vq(SIZE);
     int ncase;
-    cin>>ncase;
-    for(int icase=1;icase<=ncase;++icase)
+    cin >> ncase;
+    for (int icase = 1; icase <= ncase; ++icase)
     {
-        int N,Q;
-        cin>>N>>Q;
-        vq0.resize(Q);
-        vq1.resize(Q);
-        for(int i=0;i<Q;++i)
+        int N, Q;
+        cin >> N >> Q;
+        vq.resize(Q);
+        for (int i = 0; i < Q; ++i)
         {
-            cin>>vq0[i][0]>>vq0[i][1];
-            vq0[i][1]+=1;
-            vq1[i][1]=vq0[i][0];
-            vq1[i][0]=vq0[i][1];
-            vq0[i][2]=vq1[i][2]=1;
+            cin >> vq[i].left >> vq[i].right;
+            vq[i].right += 1;
         }
-        sort(vq0.begin(),vq0.end());
-        sort(vq1.begin(),vq1.end());
-        vector<bool> used(Q,false);
-        int ans=INT_MAX,count;
-        int i0=0,i1=0;
-        for(int select=0;select<Q;++select)
+        sort(vq.begin(), vq.end(), [](Node &a, Node &b) {
+            return a.right < b.right;
+        });
+        list<array<int, 2>> lq1;
+        for (Node &q : vq)
         {
-            vector<array<int,2>> vcurr;
-            vector<int> vcount(Q,0);
-            for(i0=0;i0<Q && vq0[i0][2]==0;++i0);
-            for(i1=0;i1<Q && vq1[i1][2]==0;++i1);
-            int lasti=0,count=0;
-            while(i0<Q || i1<Q)
+            lq1.push_back({ q.right,0 });
+        }
+        auto it = lq1.begin();
+        for (int i = 0; i < Q; ++i, ++it)
+        {
+            vq[i].itr = it;
+        }
+        sort(vq.begin(), vq.end(), [](Node &a, Node &b) {
+            return a.left < b.left;
+        });
+        list<array<int, 2>> lq0;
+        for (Node &q : vq)
+        {
+            lq0.push_back({ q.left,0 });
+        }
+        it = lq0.begin();
+        for (int i = 0; i < Q; ++i, ++it)
+        {
+            vq[i].itl = it;
+        }
+        for (int i = 0; i < Q; ++i)
+        {
+            (*vq[i].itl)[1] = i;
+            (*vq[i].itr)[1] = i;
+        }
+        int ans = INT_MAX;
+        for (int select = 0; select < Q; ++select)
+        {
+            int lasti = 0, idSum = 0, count = 0;
+            unordered_map<int, int> mcount;
+            auto it0 = lq0.begin(), it1 = lq1.begin();
+            while (it0 != lq0.end() || it1 != lq1.end())
             {
                 int curri;
-                if(i0==Q) curri=vq1[i1][0];
-                else if(i1==Q) curri=vq0[i0][0];
-                else curri=min(vq0[i0][0],vq1[i1][0]);
-                if(count==1)
+                if (it0 == lq0.end()) curri = (*it1)[0];
+                else if (it1 == lq1.end()) curri = (*it0)[0];
+                else curri = min((*it0)[0], (*it1)[0]);
+                if (count == 1)
                 {
-                    int k=0;
-                    for(;k<vcurr.size() && vcurr[k][0]<curri;++k);
-                    vcurr[0]=vcurr[k];
-                    vcurr.resize(1);
-                    vcount[vcurr[0][1]]+=curri-lasti;
+                    mcount[idSum] += curri - lasti;
                 }
-                for(;i0<Q && vq0[i0][0]==curri;++i0)
+                for (; it0 != lq0.end() && (*it0)[0] == curri; ++it0)
                 {
-                    if(vq0[i0][2]!=0)
-                    {
-                        vcurr.push_back({vq0[i0][1],i0});
-                        count+=1;
-                    }
+                    idSum += (*it0)[1];
+                    count += 1;
                 }
-                for(;i1<Q && vq1[i1][0]==curri;++i1)
+                for (; it1 != lq1.end() && (*it1)[0] == curri; ++it1)
                 {
-                    if(vq1[i1][2]!=0)
-                    {
-                        count-=1;
-                    }
+                    idSum -= (*it1)[1];
+                    count -= 1;
                 }
-                for(;i0<Q && vq0[i0][2]==0;++i0);
-                for(;i1<Q && vq1[i1][2]==0;++i1);
-                lasti=curri;
+                lasti = curri;
             }
-            int i=max_element(vcount.begin(),vcount.end())-vcount.begin();
-            ans=min(ans,vcount[i]);
-            vq0[i][2]=0;
-            (*lower_bound(vq1.begin(),vq1.end(),array<int,3>({vq0[i][1],vq0[i][0],1})))[2]=0;
+            if (mcount.empty())
+            {
+                ans = 0;
+                break;
+            }
+            unordered_map<int, int>::iterator itmax = mcount.begin();
+            for (auto it = next(mcount.begin()); it != mcount.end(); ++it)
+            {
+                if (it->second > itmax->second)
+                {
+                    itmax = it;
+                }
+            }
+            ans = min(ans, itmax->second);
+            lq0.erase(vq[itmax->first].itl);
+            lq1.erase(vq[itmax->first].itr);
         }
-        cout<<"Case #"<<icase<<": "<<ans<<endl;
+        cout << "Case #" << icase << ": " << ans << endl;
     }
     return 0;
 }
