@@ -172,3 +172,127 @@ struct SegmentTreeMax
         return Query(0, 0, n - 1, L, R);
     }
 };
+
+//用于处理求区间和的线段树，使用了push down，包含修改区间值和求区间和的操作
+struct SegmentTreeSum
+{
+    int n;
+    vector<int> vsum, tags;
+    SegmentTreeSum(int size)
+    {
+        n = size;
+        vsum.assign(n << 2, 0);
+        tags.assign(n << 2, 0);
+    }
+    SegmentTreeSum(vector<int> &v)
+    {
+        n = v.size();
+        vsum.assign(n << 2, 0);
+        tags.assign(n << 2, 0);
+        Build(0, 0, n - 1, v);
+    }
+    void Build(int c, int l, int r, vector<int> &v)
+    {
+        if (l == r)
+        {
+            vsum[c] = v[l];
+            return;
+        }
+        int mid = (l + r) >> 1;
+        Build((c << 1) + 1, l, mid, v);
+        Build((c << 1) + 2, mid + 1, r, v);
+        vsum[c] = vsum[(c << 1) + 1] + vsum[(c << 1) + 2];
+    }
+    void Modify(int c, int l, int r, int L, int R, int diff)
+    {
+        if (L <= l && r <= R)
+        {
+            vsum[c] += diff * (r - l + 1);
+            tags[c] += diff;
+            return;
+        }
+        int mid = (l + r) >> 1;
+        if (tags[c] != 0)
+        {
+            vsum[(c << 1) + 1] += tags[c] * (mid - l + 1);
+            vsum[(c << 1) + 2] += tags[c] * (r - mid);
+            tags[(c << 1) + 1] += tags[c];
+            tags[(c << 1) + 2] += tags[c];
+            tags[c] = 0;
+        }
+        if (L <= mid)
+        {
+            Modify((c << 1) + 1, l, mid, L, R, diff);
+        }
+        if (R > mid)
+        {
+            Modify((c << 1) + 2, mid + 1, r, L, R, diff);
+        }
+        vsum[c] = vsum[(c << 1) + 1] + vsum[(c << 1) + 2];
+    }
+    void Update(int c, int l, int r, int L, int R, int val)
+    {
+        if (L <= l && r <= R)
+        {
+            vsum[c] = val * (r - l + 1);
+            tags[c] = val;
+            return;
+        }
+        int mid = (l + r) >> 1;
+        if (tags[c] != 0)
+        {
+            vsum[(c << 1) + 1] = tags[c] * (mid - l + 1);
+            vsum[(c << 1) + 2] = tags[c] * (r - mid);
+            tags[(c << 1) + 1] = tags[c];
+            tags[(c << 1) + 2] = tags[c];
+            tags[c] = 0;
+        }
+        if (L <= mid)
+        {
+            Update((c << 1) + 1, l, mid, L, R, val);
+        }
+        if (R > mid)
+        {
+            Update((c << 1) + 2, mid + 1, r, L, R, val);
+        }
+        vsum[c] = vsum[(c << 1) + 1] + vsum[(c << 1) + 2];
+    }
+    int Query(int c, int l, int r, int L, int R)
+    {
+        if (L <= l && r <= R)
+        {
+            return vsum[c];
+        }
+        int mid = (l + r) >> 1;
+        if (tags[c] != 0)
+        {
+            vsum[(c << 1) + 1] += tags[c] * (mid - l + 1);
+            vsum[(c << 1) + 2] += tags[c] * (r - mid);
+            tags[(c << 1) + 1] += tags[c];
+            tags[(c << 1) + 2] += tags[c];
+            tags[c] = 0;
+        }
+        int ans = 0;
+        if (L <= mid)
+        {
+            ans += Query((c << 1) + 1, l, mid, L, R);
+        }
+        if (R > mid)
+        {
+            ans += Query((c << 1) + 2, mid + 1, r, L, R);
+        }
+        return ans;
+    }
+    void Modify(int L, int R, int diff)
+    {
+        Modify(0, 0, n - 1, L, R, diff);
+    }
+    int Query(int L, int R)
+    {
+        return Query(0, 0, n - 1, L, R);
+    }
+    void Update(int L,int R,int val)
+    {
+        Update(0,0,n-1,L,R,val);
+    }
+};
