@@ -1,244 +1,105 @@
 #include <iostream>
 #include <vector>
-#include <array>
-#include <iomanip>
-#include <algorithm>
+#include <map>
 using namespace std;
 
-int N, P, H;
-int obstacle[10][2];
+int N, G, M;
 
-double f(double R, double a, int xi, int yi, double x)
+int main()
 {
-    return (x - xi)*(x - xi) + (a*x*(x - P) - yi)*(a*x*(x - P) - yi) - R*R;
-}
-
-double f1(double R, double a, int xi, int yi, double x)
-{
-    return 2 * (x - xi) + 2 * a*(a*x*(x - P) - yi)*(2 * x - P);
-}
-
-bool CheckA(double R, double a, int x, int y)
-{
-    static const double eps = 1e-9;
-    int times = 1000;
-    double x0, x1=0;
-    do
+    int ncase;
+    cin >> ncase;
+    for (int icase = 1; icase <= ncase; ++icase)
     {
-        x0 = x1;
-        x1 = x0 - f(R, a, x, y, x0) / f1(R, a, x, y, x0);
-        times -= 1;
-    } while (times != 0 && abs(x1 - x0) > eps);
-    return times != 0;
-}
-
-vector<array<double, 2>> CalcA0(double R, int rx, int ry)
-{
-    static const double eps = 1e-8;
-    vector<array<double, 2>> ans;
-    double upbound = 4.0 * H / P / P / eps;
-    double upA = 4.0 * (H - R) / P / P / eps;
-    double midA = (double)ry / rx / (rx - P)/(-eps);
-    int left = midA, right = upbound, mid;
-    while (left < right)
-    {
-        mid = (right - left) / 2 + left;
-        if (CheckA(R, -mid*eps, rx, ry))
+        cin >> N >> G >> M;
+        map<int, int> mc, ma;
+        vector<map<int, int>::iterator> vpit(G);
+        for (int i = 0; i<G; ++i)
         {
-            left = mid + 1;
+            int p;
+            char c;
+            cin >> p >> c;
+            p -= 1;
+            map<int, int> &m = (c == 'c' ? mc : ma);
+            m[p] = 0;
+            vpit[i] = m.find(p);
         }
-        else
+        for (int i = 0; i<N; ++i)
         {
-            right = mid;
-        }
-    }
-    if (left/4*eps*P*P+R<H && -upA<-left)
-    {
-        ans.push_back({ -upA*eps, -left*eps });
-    }
-    if (ry - R >= 0)
-    {
-        int left = 0, right = midA, mid;
-        while (left < right)
-        {
-            mid = (right - left) / 2 + left;
-            if (CheckA(R, -mid*eps, rx, ry))
+            int cfirstmeet, afirstmeet, clastmeet, alastmeet;
+            auto itc = ma.upper_bound(i);
+            if (itc == ma.end())
             {
-                right = mid;
+                cfirstmeet = N - i + ma.begin()->first;
             }
             else
             {
-                left = mid + 1;
+                cfirstmeet = itc->first - i;
             }
-        }
-        ans.push_back({ -(left)*eps,0 });
-    }
-    return ans;
-}
-
-bool CheckR0(double R)
-{
-    vector<array<double, 2>> tans = CalcA0(R, obstacle[0][0], obstacle[0][1]);
-    for (int i = 1; i < N && !tans.empty(); ++i)
-    {
-        vector<array<double, 2>> va = move(tans);
-        vector<array<double, 2>> vb = CalcA0(R, obstacle[i][0], obstacle[i][1]);
-        for (array<double, 2> &a : va)
-        {
-            for (array<double, 2> &b : vb)
+            int clastpos = (i + M) % N;
+            itc = ma.upper_bound(clastpos);
+            if (itc == ma.begin())
             {
-                if (a[0] <= b[1] && b[0] <= a[1])
+                itc = prev(ma.end());
+                clastmeet = clastpos + N - itc->first;
+            }
+            else
+            {
+                itc = prev(itc);
+                clastmeet = clastpos - itc->first;
+            }
+            auto ita = mc.lower_bound(i);
+            if (ita == mc.begin())
+            {
+                afirstmeet = i + N - prev(mc.end())->first;
+            }
+            else
+            {
+                afirstmeet = i - prev(ita)->first;
+            }
+            int alastpos = ((i - M) % N + N) % N;
+            ita = mc.upper_bound(alastpos);
+            if (ita == mc.end())
+            {
+                ita = mc.begin();
+                alastmeet = alastpos + N - ita->first;
+            }
+            else
+            {
+                ita = prev(ita);
+                alastmeet = alastpos - ita->first;
+            }
+            if (cfirstmeet >= M && afirstmeet >= M)
+            {
+                if (clastmeet < alastmeet)
                 {
-                    tans.push_back({ max(a[0],b[0]),min(a[1],b[1]) });
+                    itc->second += 1;
+                }
+                else if (clastmeet > alastmeet)
+                {
+                    ita->second += 1;
+                }
+                else
+                {
+                    itc->second += 1;
+                    ita->second += 1;
                 }
             }
-        }
-    }
-    return !tans.empty();
-}
-
-array<double, 2> CalcA(double R, int rx, int ry)
-{
-    static const double eps = 1e-8;
-    array<double, 2> ans;
-    double upbound = 4.0 * H / P / P / eps;
-    // double upA = 4.0 * (H - R) / P / P / eps;
-    double centerA = (double)ry / rx / (rx - P)/(-eps);
-
-    long long left = centerA, right = upbound, mid;
-    while (left < right)
-    {
-        mid = (right - left) / 2 + left;
-        if (CheckA(R, -mid*eps, rx, ry))
-        {
-            left = mid + 1;
-        }
-        else
-        {
-            right = mid;
-        }
-    }
-    ans[1]=left*eps;
-
-    left = 0, right = centerA;
-    while (left < right)
-    {
-        mid = (right - left) / 2 + left;
-        if (CheckA(R, -mid*eps, rx, ry))
-        {
-            right = mid;
-        }
-        else
-        {
-            left = mid + 1;
-        }
-    }
-    if (left==0 && ry - R >= 0)
-    {
-        left+=1;
-    }
-    ans[0]=left*eps;
-    return ans;
-}
-
-bool CheckR(double R)
-{
-    vector<array<double, 2>> aInterval(N);
-    for(int i=0;i<N;++i)
-    {
-        aInterval[i]=CalcA(R, obstacle[i][0], obstacle[i][1]);
-    }
-    sort(aInterval.begin(),aInterval.end());
-    if(0<aInterval[0][0]) return true;
-    array<double, 2> ai=aInterval[0];
-    double upA = 4.0 * (H - R) / P / P;
-    for(int i=1;i<N;++i)
-    {
-        if(ai[1]<aInterval[i][0]) return true;
-        ai[0]=min(ai[0],aInterval[i][0]);
-        ai[1]=max(ai[1],aInterval[i][1]);
-    }
-    return ai[1]<upA;
-}
-
-int main()
-{
-	int ncase;
-	cin >> ncase;
-	for (int icase = 1; icase <= ncase; ++icase)
-	{
-        cin >> N >> P >> H;
-        for (int i = 0; i < N; ++i)
-        {
-            cin >> obstacle[i][0] >> obstacle[i][1];
-        }
-        int left = 1, right = 1e9, mid;
-        while (left < right)
-        {
-            mid = (right - left) / 2 + left;
-            if (CheckR(mid*1e-6))
+            else if (cfirstmeet >= M)
             {
-                left = mid + 1;
+                itc->second += 1;
             }
-            else
+            else if (afirstmeet >= M)
             {
-                right = mid;
+                ita->second += 1;
             }
         }
-        cout << "Case #" << icase << ": " << fixed << setprecision(6) << (left - 1)*1e-6 << endl;
-	}
-	return 0;
-}
-#include <iostream>
-#include <algorithm>
-#include <numeric>
-#include <iomanip>
-#include <cmath>
-using namespace std;
-
-int n;
-double x[10000];
-double y[10000];
-double w[10000];
-
-double Calc(double *a)
-{
-    sort(a, a + n);
-    double currW = -accumulate(w, w + n, 0.0);
-    double curr = 0.0;
-    for (int i = 1; i < n; ++i)
-    {
-        curr += abs(a[i] - a[0]) * w[i];
-    }
-    double ans = curr;
-    for (int i = 1; i < n; ++i)
-    {
-        currW += w[i] * 2;
-        curr += currW * (a[i] - a[i - 1]);
-        ans = min(ans, curr);
-    }
-    return ans;
-}
-
-int main()
-{
-    double sqrt2 = sqrt(2.0);
-	int ncase;
-	cin >> ncase;
-	for (int icase = 1; icase <= ncase; ++icase)
-	{
-        cin >> n;
-        for (int i = 0; i < n; ++i)
+        cout << "Case #" << icase << ":";
+        for (int i = 0; i<G; ++i)
         {
-            double xx, yy;
-            cin >> xx >> yy >> w[i];
-            x[i] = 0.5*(xx + yy);
-            y[i] = 0.5*(xx - yy);
+            cout << ' ' << vpit[i]->second;
         }
-        double sumx = Calc(x);
-        double sumy = Calc(y);
-        cout << "Case #" << icase << ": " << fixed << setprecision(8) << (Calc(x) + Calc(y)) << endl;
-        //cout << "Case #" << icase << ": " << fixed << setprecision(8) << Calc(x) + Calc(y) << endl;
-	}
-	return 0;
+        cout << endl;
+    }
+    return 0;
 }
