@@ -18,7 +18,14 @@ dp[i+1][change][lastnum]=(height[i+1]==lastnum ? 0 : 1)+min(dp[i][change][lastnu
 式1等价于：
 dp[i+1][change][lastnum]=(height[i+1]==lastnum ? 0 : 1)+min(dp[i][change][lastnum], min{dp[i][change-1][j],0<=j<C} ) ,式2
 不需要求最小值，因此总时间复杂度为O(N*N*K)
-3.
+3.另一种DP方法
+先设R(i,j)为将范围[i,j]中的墙高度变为一样所需的最小修改次数，可以在O(N*N*logN)时间内完成
+设F(x,k)为若范围[0,x]中墙高度的改变次数最多为k时，所需要的最小修改次数
+设范围[0,i]中墙高度变化次数为k-1，其最小修改次数为F(i,k-1)；
+而范围[i+1,x]中墙高度均一致，也就是[i+1,x]是最后一段高度一样的墙，其最小修改次数为R(i+1,x)
+枚举最后一次高度变化的分界点即可得到F(x,k)
+即F(x,k)=min{F(i,k-1)+R(i+1,x)},0<=i<x
+
 
 Problem B. Teach Me
 
