@@ -8,10 +8,10 @@ using namespace std;
 
 int main()
 {
-	int ncase;
-	cin >> ncase;
-	for (int icase = 1; icase <= ncase; ++icase)
-	{
+    int ncase;
+    cin >> ncase;
+    for (int icase = 1; icase <= ncase; ++icase)
+    {
         int N, K;
         cin >> N >> K;
         vector<int> vs(N);
@@ -57,6 +57,6 @@ int main()
             }
         }
         cout << "Case #" << icase << ": " << F[N - 1][K] << endl;
-	}
-	return 0;
+    }
+    return 0;
 }
