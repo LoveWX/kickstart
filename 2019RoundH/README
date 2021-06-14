@@ -1,0 +1,14 @@
+Problem A. H-index
+H-index是指在正整数数组中有H个数其值大于等于H。每次给出数组中的一个数，求给出这个数后现有数组的H-index
+设数组中大于等于H的数组成集合S
+将数组排序，并用柱状图表示，则H-index表示在右下角最大正方形的边长。正方形的底表示集合S的size，高表示集合S的最小值。
+如果S.size>S.minval，需要去掉S中的最小值，使得S.size变小S.minval变大。
+直到S.size<=S.minval，说明已经找到这个正方形，此时H=min(S.size,S.minval)=S.size
+维护一个小顶堆来表示集合S，每当给出一个数a时就加入集合S中，重复上述步骤找到H-index
+如果a<=H，则a<=S.size<S.size+1，所以a将作为集合S的最小元素首先被剔除
+如果a>H，则集合S的容量增加1
+时间复杂度为O(NlogN)
+
+Problem B. Diagonal Puzzle
+
+Problem C. Elevanagram
