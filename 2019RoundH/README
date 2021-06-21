@@ -45,6 +45,6 @@ Problem C. Elevanagram
 2.将数的个数模22是不对的，反例：0 0 0 0 2 0 1 1 22
 3.大部分解法均认为如果一个数的个数超出一定值就只取这个值，当然还要保持奇偶性
 大多数都认为如果A[i]>=22，则A[i]=20+A[i]%2
-https://codeforces.com/blog/entry/71373也是这么讨论的
+https://codeforces.com/blog/entry/71373 也是这么讨论的
 但是按照sum list的说法，并不需要A[i]>=22，只要A[i]>=11即可
 而且即使sum list能够取到[0,10]的每个值，但进入正数组P的个数并不一样，不知该如何证明
