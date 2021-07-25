@@ -1,0 +1,55 @@
+一棵树中包含n个节点，每个节点到根节点的路径包括了该节点的第i个祖先节点
+可以通过Binary Lifting求得某个结点的第i个祖先节点，时间复杂度为O(logn)，空间复杂度为O(nlogn)
+其本质是dp，dp[i][j]中存储的是第i个节点的第2^j个祖先节点的下标
+这样，求第i个节点的第2^j个祖先节点，就可以转换成求第i个节点的第2^(j-1)个祖先节点的第2^(j-1)个祖先节点
+即：dp[i][j] = dp[dp[i][j - 1]][j - 1]
+这个转换的数学本质是对每个节点记录下2的幂次个的祖先节点，
+这样对于第k个祖先节点，就可以依照k的二进制依次将节点上移：每次向根节点方向上移2的幂次个节点
+而各个状态之间因为都是用2的幂次标识，互相之间转换也很方便
+预处理时，dp[i][0]即为第i个节点的第2^0=1个祖先节点，即dp[i][0]=parent[i]
+另外可以花费O(nlogn)的时间计算出每个状态的值，当然也可以用到的时候再计算
+对于求第k个祖先节点的问题，还需要额外保存各个节点的高度，防止k的值越界。
+
+// Binary Lifting to get Kth ancestor
+vector<int> height;
+vector<vector<int>> mem;
+int dph(vector<int> &parent,int curr)
+{
+    if(height[curr]!=-1) return height[curr];
+    return height[curr]=1+dph(parent,parent[curr]);
+}
+
+int dp(int curr,int pre2)
+{
+    if(mem[curr][pre2]!=-2) return mem[curr][pre2];
+    return mem[curr][pre2]=dp(dp(curr,pre2-1),pre2-1);
+}
+
+void Init(int n, vector<int> &parent)
+{
+    height.assign(n,-1);
+    height[0]=0;
+    for(int i=1;i<n;++i)
+    {
+        height[i]=dph(parent,i);
+    }
+    mem.assign(n,vector<int>(16,-2));//2^16>=节点总数
+    for(int i=0;i<n;++i)
+    {
+        mem[i][0]=parent[i];
+    }
+}
+
+int Query(int node, int k)
+{
+    if(k>height[node]) return -1;
+    for(int i=0;k!=0;++i,k>>=1)
+    {
+        if((k&1)!=0)
+        {
+            node=dp(node,i);
+        }
+    }
+    return node;
+}
+
