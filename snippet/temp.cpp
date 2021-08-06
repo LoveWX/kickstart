@@ -1,105 +1,107 @@
 #include <iostream>
 #include <vector>
-#include <map>
 using namespace std;
 
-int N, G, M;
+const int SIZE = 100000;
+int N, Q, P;
+long long A[SIZE + 1];
+//long long A;
+
+int prefixSum(vector<int> &bit, int idx)
+{
+    int sum = 0;
+    while (idx != 0)
+    {
+        sum += bit[idx];
+        idx -= (idx & -idx);
+    }
+    return sum;
+}
+
+void update(vector<int> &bit, int idx, int diff)
+{
+    while (idx <= N)
+    {
+        bit[idx] += diff;
+        idx += (idx & -idx);
+    }
+}
+
+int rangeSum(vector<int> &bit, int idx1, int idx2)
+{
+    return prefixSum(bit, idx2) - prefixSum(bit, idx1 - 1);
+}
 
 int main()
 {
-    int ncase;
-    cin >> ncase;
-    for (int icase = 1; icase <= ncase; ++icase)
-    {
-        cin >> N >> G >> M;
-        map<int, int> mc, ma;
-        vector<map<int, int>::iterator> vpit(G);
-        for (int i = 0; i<G; ++i)
+	int ncase;
+	cin >> ncase;
+	for (int icase = 1; icase <= ncase; ++icase)
+	{
+        cin >> N >> Q >> P;
+        vector<int> bit0(N + 1, 0);
+        vector<int> bit1(N + 1, 0);
+        vector<int> bit2(N + 1, 0);
+        for (int i = 1; i <= N; ++i)
         {
-            int p;
-            char c;
-            cin >> p >> c;
-            p -= 1;
-            map<int, int> &m = (c == 'c' ? mc : ma);
-            m[p] = 0;
-            vpit[i] = m.find(p);
+            cin >> A[i];
+            if (A[i] % P == 0)
+            {
+                int a = 0;
+                for (long long t = A[i]; t % P == 0; t /= P, ++a);
+                update(bit0, i, a);
+            }
+            else
+            {
+                int a = 0;
+                for (long long t = A[i] - A[i] % P; t % P == 0; t /= P, ++a);
+                update(bit1, i, a);
+                update(bit2, i, 1);
+            }
         }
-        for (int i = 0; i<N; ++i)
+        cout << "Case #" << icase << ':';
+        for (; Q > 0; --Q)
         {
-            int cfirstmeet, afirstmeet, clastmeet, alastmeet;
-            auto itc = ma.upper_bound(i);
-            if (itc == ma.end())
+            int type;
+            cin >> type;
+            if (type == 1)
             {
-                cfirstmeet = N - i + ma.begin()->first;
-            }
-            else
-            {
-                cfirstmeet = itc->first - i;
-            }
-            int clastpos = (i + M) % N;
-            itc = ma.upper_bound(clastpos);
-            if (itc == ma.begin())
-            {
-                itc = prev(ma.end());
-                clastmeet = clastpos + N - itc->first;
-            }
-            else
-            {
-                itc = prev(itc);
-                clastmeet = clastpos - itc->first;
-            }
-            auto ita = mc.lower_bound(i);
-            if (ita == mc.begin())
-            {
-                afirstmeet = i + N - prev(mc.end())->first;
-            }
-            else
-            {
-                afirstmeet = i - prev(ita)->first;
-            }
-            int alastpos = ((i - M) % N + N) % N;
-            ita = mc.upper_bound(alastpos);
-            if (ita == mc.end())
-            {
-                ita = mc.begin();
-                alastmeet = alastpos + N - ita->first;
-            }
-            else
-            {
-                ita = prev(ita);
-                alastmeet = alastpos - ita->first;
-            }
-            if (cfirstmeet >= M && afirstmeet >= M)
-            {
-                if (clastmeet < alastmeet)
+                int pos, a = 0;
+                long long val;
+                cin >> pos >> val;
+                if (A[pos] % P == 0)
                 {
-                    itc->second += 1;
-                }
-                else if (clastmeet > alastmeet)
-                {
-                    ita->second += 1;
+                    //for (long long t = val; t % P == 0; t /= P, ++a);
+                    update(bit0, pos, -rangeSum(bit0, pos, pos));
                 }
                 else
                 {
-                    itc->second += 1;
-                    ita->second += 1;
+                    update(bit1, pos, -rangeSum(bit1, pos, pos));
+                    update(bit2, pos, -1);
+                }
+                if (val % P == 0)
+                {
+                    for (long long t = val; t % P == 0; t /= P, ++a);
+                    update(bit0, pos, a);
+                }
+                else
+                {
+                    for (long long t = val; t % P == 0; t /= P, ++a);
+                    update(bit1, pos, a);
+                    update(bit2, pos, 1);
                 }
             }
-            else if (cfirstmeet >= M)
+            else
             {
-                itc->second += 1;
+                long long S;
+                int L, R;
+                cin >> S >> L >> R;
+                int a = 1;
+                for (long long t = S; S % P == 0; S /= P, ++a);
+                cout << ' ' << S * rangeSum(bit0, L, R) + a * rangeSum(bit2, L, R) + rangeSum(bit1, L, R);
             }
-            else if (afirstmeet >= M)
-            {
-                ita->second += 1;
-            }
-        }
-        cout << "Case #" << icase << ":";
-        for (int i = 0; i<G; ++i)
-        {
-            cout << ' ' << vpit[i]->second;
         }
         cout << endl;
-    }
-    return 0;
+	}
+	return 0;
 }
