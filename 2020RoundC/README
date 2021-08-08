@@ -1,0 +1,14 @@
+Problem A. Smaller Strings
+用字母表前K个字母组成长度为N的字符串，求其中字典序小于给定的字符串S的回文字符串个数
+回文字符串只要考虑S前一半字符串即可
+对于左半边字符串Sl=Si,Si-1,...,S0，
+对于第i位，如果新串该位小于Si，则其地位可以为任意值；否则考虑第Si-1位。可以表示为：
+F(Si,Si-1,...,S0)=(Si-'A')*26^i+F(Si-1,...,S0)
+从S中间向左依次计算即可。注意需要特判和S左半边一样的新串是否合法
+
+Problem B. Alien Generator
+
+
+Problem C. Rock Paper Scissors
+
+Problem D. Binary Operator
