@@ -1,0 +1,30 @@
+Problem A. Arithmetic Square
+
+
+Problem B. Cutting Intervals
+Problem C. Final Exam
+
+Problem D. Primes and Queries
+给出数组A和一组操作，对于修改操作修改其中某个值Ai，对于查询操作，计算[L,R]范围内所有V值的和，即：
+sigma[L,R](V(Ai^S-(Ai%P)^S))
+基础的数据结构可以用树状数组表示，需要对公式进行处理
+利用Lifting-the-exponent lemma，可得：
+对于n和质数p，p不能整除a，p不能整除b，
+如果p是奇质数且p能整除a-b：
+V(a^n-b^n)=V(a-b)+V(n)
+如果p==2：
+如果4能整除a-b，则：
+V(a^n-b^n)=V(a-b)+V(n)
+如果2能整除a-b，则：
+V(a^n-b^n)=V(a-b)+V(a+b)+V(n)-1
+1)如果Ai%p==0，则V(Ai^S-(Ai%P)^S)=V(Ai^S)=S*V(Ai)
+需要用一个树状数组保存这种情况的V(Ai)
+2)如果Ai<p，则V(Ai^S-(Ai%P)^S)=0
+3)如果Ai>P且Ai%p!=0，则需要将V(Ai-Ai%p)的值保存在一个树状数组中
+而将V(Ai+Ai%p)-1的值保存在另一个树状数组中
+还需要第三个树状数组来保存各个位置的值是否能被p整除(Ai%p==0)，以便求得V(S)的累加和
+对于修改操作，可以通过保存原数组，从指定位置减去原数值再加上新值的方式实现
+V(Ai)可以在O(logAi)的时间中算出，所以初始化需要O(Nlog(max(Ai)))的时间
+每个修改操作和初始化单个元素时间复杂度相同，为O(log(val))
+每个查询操作即在树状数组上求范围和即可，时间复杂度为O(log(max(S,val))
+总体时间复杂度为 O(Nlog(max(Ai))+Q(logN+log(max(S,val))))
