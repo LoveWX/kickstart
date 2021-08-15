@@ -1,114 +1,100 @@
 #include <iostream>
 #include <vector>
+#include <array>
+#include <algorithm>
 using namespace std;
 
-const int SIZE = 500000;
-long long A[SIZE + 1];
-int N, Q, P;
+const int SIZE=500;
+int N;
+vector<int> parent;
+vector<int> rankr;
 
-int prefixSum(vector<int> &bit, int idx)
+int findr(int x)
 {
-    int sum = 0;
-    while (idx != 0)
+    int r=x,i=x,j;
+    for(;r!=parent[r];r=parent[r]);
+    while(r!=parent[i])
     {
-        sum += bit[idx];
-        idx -= (idx & -idx);
+        j=parent[i];
+        parent[i]=r;
+        i=j;
     }
-    return sum;
+    return r;
 }
 
-void update(vector<int> &bit, int idx, int diff)
+void unionr(int x,int y)
 {
-    while (idx <= N)
+    int rx=findr(x),ry=findr(y);
+    if(rankr[rx]<rankr[ry])
     {
-        bit[idx] += diff;
-        idx += (idx & -idx);
+        parent[rx]=ry;
     }
-}
-
-int rangeSum(vector<int> &bit, int idx1, int idx2)
-{
-    return prefixSum(bit, idx2) - prefixSum(bit, idx1 - 1);
-}
-
-int V(long long val)
-{
-    int a = 0;
-    for (; val >= P && val % P == 0; val /= P, ++a);
-    return a;
+    else if(rankr[rx]>rankr[ry])
+    {
+        parent[ry]=rx;
+    }
+    else
+    {
+        parent[ry]=rx;
+        rankr[rx]+=1;
+    }
 }
 
 int main()
 {
     int ncase;
-    cin >> ncase;
-    for (int icase = 1; icase <= ncase; ++icase)
+    cin>>ncase;
+    for(int icase=1;icase<=ncase;++icase)
     {
-        cin >> N >> Q >> P;
-        vector<int> bit0(N + 1, 0);
-        vector<int> bit1(N + 1, 0);
-        vector<int> bit2(N + 1, 0);
-        vector<int> bit3(N + 1, 0);
-        for (int i = 1; i <= N; ++i)
+        cin>>N;
+        int t;
+        for(int i=0;i<N;++i)
         {
-            cin >> A[i];
-            if (A[i] % P == 0)
+            for(int j=0;j<N;++j)
             {
-                update(bit0, i, V(A[i]));
-            }
-            else if (A[i] > P)
-            {
-                update(bit1, i, V(A[i] - A[i] % P));
-                if (P == 2 && A[i] % 4 == 3) update(bit2, i, V(A[i] + A[i] % P) - 1);//P==2 && (Ai-(Ai%P))%4!=0
-                update(bit3, i, 1);
+                cin>>t;
             }
         }
-        cout << "Case #" << icase << ':';
-        for (; Q > 0; --Q)
+        vector<array<int,3>> edge;
+        for(int i=0;i<N;++i)
         {
-            int type;
-            cin >> type;
-            if (type == 1)
+            for(int j=0;j<N;++j)
             {
-                int pos;
-                long long val;
-                cin >> pos >> val;
-                if (A[pos] % P == 0)
+                cin>>t;
+                if(t!=0)
                 {
-                    update(bit0, pos, -V(A[pos]));
+                    edge.push_back({t,i,j+N});
                 }
-                else if (A[pos] > P)
-                {
-                    update(bit1, pos, -V(A[pos] - A[pos] % P));
-                    if (P == 2 && A[pos] % 4 == 3) update(bit2, pos, 1 - V(A[pos] + A[pos] % P));
-                    update(bit3, pos, -1);
-                }
-                if (val % P == 0)
-                {
-                    update(bit0, pos, V(val));
-                }
-                else if (val > P)
-                {
-                    update(bit1, pos, V(val - val % P));
-                    if (P == 2 && val % 4 == 3) update(bit2, pos, V(val + val % P) - 1);
-                    update(bit3, pos, 1);
-                }
-                A[pos] = val;
+            }
+        }
+        for(int i=N+N;i>0;--i)
+        {
+            cin>>t;
+        }
+
+        sort(edge.begin(),edge.end(),greater<array<int,3>>());
+        parent.assign(N+N,0);
+        for(int i=1;i<N+N;++i)
+        {
+            parent[i]=i;
+        }
+        rankr.assign(N+N,0);
+
+        int ans=0;
+        for(array<int,3> &e:edge)
+        {
+            int rx=findr(e[1]);
+            int ry=findr(e[2]);
+            if(rx!=ry)
+            {
+                unionr(rx,ry);
             }
             else
             {
-                long long S;
-                int L, R;
-                cin >> S >> L >> R;
-                long long ans = S * rangeSum(bit0, L, R) + rangeSum(bit1, L, R) + V(S) * rangeSum(bit3, L, R);
-                if (P == 2 && S % 2 == 0)
-                {
-                    ans += rangeSum(bit2, L, R);
-                }
-                cout << ' ' << ans;
+                ans+=e[0];
             }
         }
-        cout << endl;
+        cout<<"Case #"<<icase<<": "<<ans<<endl;
     }
     return 0;
 }
