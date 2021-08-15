@@ -1,8 +1,17 @@
 #include <iostream>
-#include <map>
+#include <vector>
+#include <queue>
+#include <tuple>
 using namespace std;
 
-const long long INF=2e18;
+const int SIZE=300;
+int grid[SIZE][SIZE];
+int R,C;
+
+inline bool InBoard(int x,int y)
+{
+    return 0<=x && x<R && 0<=y && y<C;
+}
 
 int main()
 {
@@ -10,54 +19,31 @@ int main()
     cin>>ncase;
     for(int icase=1;icase<=ncase;++icase)
     {
-        int N,M;
-        cin>>N>>M;
-        map<long long,long long> m;
-        for(;N>0;--N)
+        cin>>R>>C;
+        priority_queue<tuple<int,int,int>> pq;
+        for(int i=0;i<R;++i)
         {
-            long long A,B;
-            cin>>A>>B;
-            m[B]=A;
-        }
-        m[INF]=INF;
-        m[-INF]=-INF;
-        cout<<"Case #"<<icase<<':';
-        for(;M>0;--M)
-        {
-            long long S;
-            cin>>S;
-            auto it=m.lower_bound(S);
-            if(S<it->second)
+            for(int j=0;j<C;++j)
             {
-                auto it0=prev(it);
-                if(S-it0->first<=it->second-S)
-                {
-                    S=it0->first;
-                    it=it0;
-                }
-                else
-                {
-                    S=it->second;
-                }
-            }
-            cout<<' '<<S;
-            if(it->second==S)
-            {
-                it->second+=1;
-                if(it->second>it->first) m.erase(it);
-            }
-            else if(S==it->first)
-            {
-                if(it->second<=S-1) m[S-1]=it->second;
-                m.erase(it);
-            }
-            else
-            {
-                m[S-1]=it->second;
-                it->second=S+1;
+                cin>>grid[i][j];
+                pq.push({grid[i][j],i,j});
             }
         }
-        cout<<endl;
+        long long ans=0LL;
+        while(!pq.empty())
+        {
+            auto [hh,xx,yy]=pq.top();
+            pq.pop();
+            if(grid[xx][yy]<0) continue;
+            if(grid[xx][yy]<hh) ans+=hh-grid[xx][yy];
+            hh=max(grid[xx][yy],hh)-1;
+            grid[xx][yy]=-1;
+            if(InBoard(xx-1,yy) && grid[xx-1][yy]>=0) pq.push({hh,xx-1,yy});
+            if(InBoard(xx+1,yy) && grid[xx+1][yy]>=0) pq.push({hh,xx+1,yy});
+            if(InBoard(xx,yy-1) && grid[xx][yy-1]>=0) pq.push({hh,xx,yy-1});
+            if(InBoard(xx,yy+1) && grid[xx][yy+1]>=0) pq.push({hh,xx,yy+1});
+        }
+        cout<<"Case #"<<icase<<": "<<ans<<endl;
     }
     return 0;
 }
