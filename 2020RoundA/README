@@ -1,0 +1,10 @@
+Problem A. K-Goodness String
+给定字符串S，其得分为轴对称后不一样的位个数，即S[i]!=S[N-i+1]的个数，其中1<=i<=N/2
+每次操作可以修改一个字符，求将S的得分修改为K的最小操作数
+每次操作可以使得分加1或者减1，因此计算字符串S的得分A，abs(A-K)即所求
+
+Problem B. L Shaped Plots
+
+
+Problem C. Rabbit House
+Problem D. Checksum
