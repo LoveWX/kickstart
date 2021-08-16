@@ -1,6 +1,17 @@
 #include <iostream>
-#include <map>
+#include <vector>
+#include <algorithm>
 using namespace std;
+
+const int SIZE=10000;
+int A[SIZE];
+
+int Cmp(int a,int b)
+{
+    if(a>b) return 1;
+    else if(a<b) return -1;
+    return 0;
+}
 
 int main()
 {
@@ -9,32 +20,26 @@ int main()
     for(int icase=1;icase<=ncase;++icase)
     {
         int N;
-        long long C;
-        cin>>N>>C;
-        long long ans=N;
-        map<long long,long long> mm;
-        for(;N>0;--N)
+        cin>>N;
+        for(int i=0;i<N;++i)
         {
-            long long l,r;
-            cin>>l>>r;
-            mm[l+1]+=1;
-            mm[r]-=1;
+            cin>>A[i];
         }
-        map<long long,long long> mc;
-        long long last=0LL,count=0LL;
-        for(auto it=mm.begin();it!=mm.end();++it)
+        vector<int> last(4,0);
+        for(int i=1;i<N;++i)
         {
-            mc[count]+=it->first-last;
-            count+=it->second;
-            last=it->first;
+            vector<int> curr(4,N+1);
+            int d0=Cmp(A[i-1],A[i]);
+            for(int a=0;a<4;++a)
+            {
+                for(int b=0;b<4;++b)
+                {
+                    curr[b]=min(curr[b],last[a]+(d0==Cmp(a,b) ? 0 : 1));
+                }
+            }
+            last=move(curr);
         }
-        for(auto it=mc.rbegin();C>0 && it!=mc.rend();++it)
-        {
-            long long t=min(C,it->second);
-            ans+=t*it->first;
-            C-=t;
-        }
-        cout<<"Case #"<<icase<<": "<<ans<<endl;
+        cout<<"Case #"<<icase<<": "<<min(min(last[0],last[1]),min(last[2],last[3]))<<endl;
     }
     return 0;
 }
