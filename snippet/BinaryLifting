@@ -1,5 +1,5 @@
 一棵树中包含n个节点，每个节点到根节点的路径包括了该节点的第i个祖先节点
-可以通过Binary Lifting求得某个结点的第i个祖先节点，时间复杂度为O(logn)，空间复杂度为O(nlogn)
+可以通过倍增法(Binary Lifting)求得某个结点的第i个祖先节点，时间复杂度为O(logn)，空间复杂度为O(nlogn)
 其本质是dp，dp[i][j]中存储的是第i个节点的第2^j个祖先节点的下标
 这样，求第i个节点的第2^j个祖先节点，就可以转换成求第i个节点的第2^(j-1)个祖先节点的第2^(j-1)个祖先节点
 即：dp[i][j] = dp[dp[i][j - 1]][j - 1]
@@ -53,3 +53,58 @@ int Query(int node, int k)
     return node;
 }
 
+//事先计算每个状态值的版本
+int mem[SIZE][LOGSIZE];
+memset(mem,-1,sizeof(int)*N*LOGSIZE);
+for(int i=0;i<N;++i)
+{
+    mem[i][0]=parent[i];
+}
+for(int j=1;j<LOGSIZE;++j)
+{
+    for(int i=0;i<N;++i)
+    {
+        if(mem[i][j-1]!=-1)
+        {
+            mem[i][j]=mem[mem[i][j-1]][j-1];
+        }
+    }
+}
+
+//计算时从最高bit位开始依次尝试
+for(int b=LOGSIZE-1;b>=0;--b)
+{
+    if(mem[Y][b]!=-1 && /*仍不满足条件*/)
+    {
+        Y=mem[Y][b];
+    }
+}
+Y=parent[Y];
+总体的思想是从起始点开始，从要上溯的k值的最高bit位开始，依次尝试向上查找
+如果没有超过根结点，且仍然可以向上找（没有找到），就向上移动。
+最终会找到结果结点的子结点，它的父结点即为所求。
+
+倍增法(Binary Lifting)可以用于求结点的最小公共祖先：
+先将深度较大的结点向上跳直到两个结点深度一致。如果两个结点重合，那该结点即所求
+否则两个结点一起向上跳，直到两个结点的父结点一致，该父结点即为所求
+int findLCA(int u,int v)
+{
+    if (depth[u] < depth[v]) swap(u,v);
+    for (int b = MAXB-1;b >= 0;b--)
+    {
+        if (depth[mem[u][b]] >= depth[v])
+        {
+            u = mem[u][b];
+        }
+        if (u == v) return u;
+        for (int b = MAXB-1;b >= 0;b--)
+        {
+            if (mem[u][b] != mem[v][b])
+            {
+                u = mem[u][b];
+                v = mem[v][b];
+            }
+        }
+    }
+    return mem[u][0];
+}
