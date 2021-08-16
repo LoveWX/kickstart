@@ -1,114 +1,103 @@
 #include <iostream>
 #include <vector>
+#include <cstring>
 using namespace std;
 
-const int SIZE = 500000;
-long long A[SIZE + 1];
-int N, Q, P;
+const int SIZE=100000;
+const int LOGSIZE=17;
+int D[SIZE];
+int lchild[SIZE],rchild[SIZE];
+int parent[SIZE],countd[SIZE];
+int mem[SIZE][LOGSIZE];
 
-int prefixSum(vector<int> &bit, int idx)
+int dfs(int pare,int curr)
 {
-    int sum = 0;
-    while (idx != 0)
-    {
-        sum += bit[idx];
-        idx -= (idx & -idx);
-    }
-    return sum;
-}
-
-void update(vector<int> &bit, int idx, int diff)
-{
-    while (idx <= N)
-    {
-        bit[idx] += diff;
-        idx += (idx & -idx);
-    }
-}
-
-int rangeSum(vector<int> &bit, int idx1, int idx2)
-{
-    return prefixSum(bit, idx2) - prefixSum(bit, idx1 - 1);
-}
-
-int V(long long val)
-{
-    int a = 0;
-    for (; val >= P && val % P == 0; val /= P, ++a);
-    return a;
+    parent[curr]=pare;
+    countd[curr]=1;
+    if(lchild[curr]!=-1) countd[curr]+=dfs(curr,lchild[curr]);
+    if(rchild[curr]!=-1) countd[curr]+=dfs(curr,rchild[curr]);
+    return countd[curr];
 }
 
 int main()
 {
     int ncase;
-    cin >> ncase;
-    for (int icase = 1; icase <= ncase; ++icase)
+    cin>>ncase;
+    for(int icase=1;icase<=ncase;++icase)
     {
-        cin >> N >> Q >> P;
-        vector<int> bit0(N + 1, 0);
-        vector<int> bit1(N + 1, 0);
-        vector<int> bit2(N + 1, 0);
-        vector<int> bit3(N + 1, 0);
-        for (int i = 1; i <= N; ++i)
+        int N,Q;
+        cin>>N>>Q;
+        N-=1;
+        for(int i=0;i<N;++i)
         {
-            cin >> A[i];
-            if (A[i] % P == 0)
+            cin>>D[i];
+        }
+        memset(lchild,-1,sizeof(int)*N);
+        memset(rchild,-1,sizeof(int)*N);
+        vector<int> rstk(1,0);
+        for(int i=1;i<N;++i)
+        {
+            if(D[rstk[0]]<D[i])
             {
-                update(bit0, i, V(A[i]));
+                lchild[i]=rstk[0];
+                rstk={i};
+                continue;
             }
-            else if (A[i] > P)
+            while(D[rstk.back()]<D[i])
             {
-                update(bit1, i, V(A[i] - A[i] % P));
-                if (P == 2 && A[i] % 4 == 3) update(bit2, i, V(A[i] + A[i] % P) - 1);//P==2 && (Ai-(Ai%P))%4!=0
-                update(bit3, i, 1);
+                rstk.pop_back();
+            }
+            lchild[i]=rchild[rstk.back()];
+            rchild[rstk.back()]=i;
+            rstk.push_back(i);
+        }
+        dfs(-1,rstk[0]);
+        memset(mem,-1,sizeof(int)*N*LOGSIZE);
+        for(int i=0;i<N;++i)
+        {
+            mem[i][0]=parent[i];
+        }
+        for(int j=1;j<LOGSIZE;++j)
+        {
+            for(int i=0;i<N;++i)
+            {
+                if(mem[i][j-1]!=-1)
+                {
+                    mem[i][j]=mem[mem[i][j-1]][j-1];
+                }
             }
         }
-        cout << "Case #" << icase << ':';
-        for (; Q > 0; --Q)
+
+        int S,K;
+        cout<<"Case #"<<icase<<':';
+        for(;Q>0;--Q)
         {
-            int type;
-            cin >> type;
-            if (type == 1)
+            cin>>S>>K;
+            K-=1;
+            int X;
+            if(S==1)               X=0;
+            else if(S==N+1)        X=N-1;
+            else if(D[S-2]<D[S-1]) X=S-2;
+            else                   X=S-1;
+            if(countd[X]>=K)
             {
-                int pos;
-                long long val;
-                cin >> pos >> val;
-                if (A[pos] % P == 0)
-                {
-                    update(bit0, pos, -V(A[pos]));
-                }
-                else if (A[pos] > P)
-                {
-                    update(bit1, pos, -V(A[pos] - A[pos] % P));
-                    if (P == 2 && A[pos] % 4 == 3) update(bit2, pos, 1 - V(A[pos] + A[pos] % P));
-                    update(bit3, pos, -1);
-                }
-                if (val % P == 0)
-                {
-                    update(bit0, pos, V(val));
-                }
-                else if (val > P)
-                {
-                    update(bit1, pos, V(val - val % P));
-                    if (P == 2 && val % 4 == 3) update(bit2, pos, V(val + val % P) - 1);
-                    update(bit3, pos, 1);
-                }
-                A[pos] = val;
+                if(X+1<S) cout<<' '<<S-K;
+                else      cout<<' '<<S+K;
+                continue;
             }
-            else
+            int Y=X;
+            for(int b=LOGSIZE-1;b>=0;--b)
             {
-                long long S;
-                int L, R;
-                cin >> S >> L >> R;
-                long long ans = S * rangeSum(bit0, L, R) + rangeSum(bit1, L, R) + V(S) * rangeSum(bit3, L, R);
-                if (P == 2 && S % 2 == 0)
+                if(mem[Y][b]!=-1 && countd[mem[Y][b]]<K)
                 {
-                    ans += rangeSum(bit2, L, R);
+                    Y=mem[Y][b];
                 }
-                cout << ' ' << ans;
             }
+            Y=parent[Y];
+            if(X<Y) cout<<' '<<Y+1+(K-countd[lchild[Y]]);
+            else    cout<<' '<<Y+2-(K-countd[rchild[Y]]);
         }
-        cout << endl;
+        cout<<endl;
     }
     return 0;
 }
