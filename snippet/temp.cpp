@@ -1,107 +1,42 @@
-#include <iostream>
-#include <vector>
-using namespace std;
-
-const int SIZE = 100000;
-int N, Q, P;
-long long A[SIZE + 1];
-//long long A;
-
-int prefixSum(vector<int> &bit, int idx)
-{
-    int sum = 0;
-    while (idx != 0)
+class Solution {
+public:
+    vector<int> sa;
+    vector<int> SuffixArray(vector<int> &vi)
     {
-        sum += bit[idx];
-        idx -= (idx & -idx);
-    }
-    return sum;
-}
-
-void update(vector<int> &bit, int idx, int diff)
-{
-    while (idx <= N)
-    {
-        bit[idx] += diff;
-        idx += (idx & -idx);
-    }
-}
-
-int rangeSum(vector<int> &bit, int idx1, int idx2)
-{
-    return prefixSum(bit, idx2) - prefixSum(bit, idx1 - 1);
-}
-
-int main()
-{
-	int ncase;
-	cin >> ncase;
-	for (int icase = 1; icase <= ncase; ++icase)
-	{
-        cin >> N >> Q >> P;
-        vector<int> bit0(N + 1, 0);
-        vector<int> bit1(N + 1, 0);
-        vector<int> bit2(N + 1, 0);
-        for (int i = 1; i <= N; ++i)
+        int n=vi.size();
+        vector<int> last=vi;
+        for(int stp=1,len=1;len/2<n;++stp,len<<=1)
         {
-            cin >> A[i];
-            if (A[i] % P == 0)
+            vector<array<int,3>> curr(n);
+            for(int i=0;i<n;++i)
             {
-                int a = 0;
-                for (long long t = A[i]; t % P == 0; t /= P, ++a);
-                update(bit0, i, a);
+                curr[i][0]=last[i];
+                curr[i][1]=(i+len<n ? last[i+len] : -3);
+                curr[i][2]=i;
             }
-            else
+            sort(curr.begin(),curr.end());
+            for(int i=0;i<n;++i)
             {
-                int a = 0;
-                for (long long t = A[i] - A[i] % P; t % P == 0; t /= P, ++a);
-                update(bit1, i, a);
-                update(bit2, i, 1);
+                last[curr[i][2]]=
+                    (i>0 && curr[i-1][0]==curr[i][0] && curr[i-1][1]==curr[i][1] ?
+                     last[curr[i-1][2]] : i);
             }
         }
-        cout << "Case #" << icase << ':';
-        for (; Q > 0; --Q)
+        return last;
+    }
+    int longestCommonSubpath(int n, vector<vector<int>>& paths) {
+        vector<int> vp,vi;
+        for(int i=0;i<paths.size();++i)
         {
-            int type;
-            cin >> type;
-            if (type == 1)
+            for(int j=0;j<paths[i].size();++j)
             {
-                int pos, a = 0;
-                long long val;
-                cin >> pos >> val;
-                if (A[pos] % P == 0)
-                {
-                    //for (long long t = val; t % P == 0; t /= P, ++a);
-                    update(bit0, pos, -rangeSum(bit0, pos, pos));
-                }
-                else
-                {
-                    update(bit1, pos, -rangeSum(bit1, pos, pos));
-                    update(bit2, pos, -1);
-                }
-                if (val % P == 0)
-                {
-                    for (long long t = val; t % P == 0; t /= P, ++a);
-                    update(bit0, pos, a);
-                }
-                else
-                {
-                    for (long long t = val; t % P == 0; t /= P, ++a);
-                    update(bit1, pos, a);
-                    update(bit2, pos, 1);
-                }
+                vp.push_back(paths[i][j]);
+                vi.push_back(i);
             }
-            else
-            {
-                long long S;
-                int L, R;
-                cin >> S >> L >> R;
-                int a = 1;
-                for (long long t = S; S % P == 0; S /= P, ++a);
-                cout << ' ' << S * rangeSum(bit0, L, R) + a * rangeSum(bit2, L, R) + rangeSum(bit1, L, R);
-            }
+            vp.push_back(-1);
+            vi.push_back(-1);
         }
-        cout << endl;
-	}
-	return 0;
-}
+        sa=SuffixArray(vi);
+        
+    }
+};
