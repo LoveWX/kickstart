@@ -9,6 +9,8 @@
 预处理时，dp[i][0]即为第i个节点的第2^0=1个祖先节点，即dp[i][0]=parent[i]
 另外可以花费O(nlogn)的时间计算出每个状态的值，当然也可以用到的时候再计算
 对于求第k个祖先节点的问题，还需要额外保存各个节点的高度，防止k的值越界。
+构建各个结点的关系需要O(n)的时间，而查询最近公共祖先需要O(logn)的时间
+因此对于二叉树而不是多叉树上的单次查询，应直接构建从根开始的路径来查找。
 
 // Binary Lifting to get Kth ancestor
 vector<int> height;
@@ -82,29 +84,29 @@ for(int b=LOGSIZE-1;b>=0;--b)
 Y=parent[Y];
 总体的思想是从起始点开始，从要上溯的k值的最高bit位开始，依次尝试向上查找
 如果没有超过根结点，且仍然可以向上找（没有找到），就向上移动。
-最终会找到结果结点的子结点，它的父结点即为所求。
+最终会找到结果结点的子结点，它的父结点即为所求。(似乎找到的就是目标结点)
 
 倍增法(Binary Lifting)可以用于求结点的最小公共祖先：
 先将深度较大的结点向上跳直到两个结点深度一致。如果两个结点重合，那该结点即所求
 否则两个结点一起向上跳，直到两个结点的父结点一致，该父结点即为所求
 int findLCA(int u,int v)
 {
-    if (depth[u] < depth[v]) swap(u,v);
-    for (int b = MAXB-1;b >= 0;b--)
+    if(depth[u]<depth[v]) swap(u,v);
+    for(int b=LOGSIZE-1;b>=0;--b)
     {
-        if (depth[mem[u][b]] >= depth[v])
+        if(anc[u][b]>=0 && depth[anc[u][b]]>=depth[v])
         {
-            u = mem[u][b];
-        }
-        if (u == v) return u;
-        for (int b = MAXB-1;b >= 0;b--)
-        {
-            if (mem[u][b] != mem[v][b])
-            {
-                u = mem[u][b];
-                v = mem[v][b];
-            }
+            u=anc[u][b];
         }
     }
-    return mem[u][0];
+    if(u==v) return u;
+    for(int b=LOGSIZE-1;b>=0;--b)
+    {
+        if(anc[u][b]!=anc[v][b])
+        {
+            u=anc[u][b];
+            v=anc[v][b];
+        }
+    }
+    return anc[u][0];
 }
