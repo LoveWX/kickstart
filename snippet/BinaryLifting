@@ -12,15 +12,52 @@
 构建各个结点的关系需要O(n)的时间，而查询最近公共祖先需要O(logn)的时间
 因此对于二叉树而不是多叉树上的单次查询，应直接构建从根开始的路径来查找。
 
-// Binary Lifting to get Kth ancestor
-vector<int> height;
-vector<vector<int>> mem;
-int dph(vector<int> &parent,int curr)
+int N;//结点总数
+int LOGSIZE=16;//2^16>=节点总数
+vector<int> parent;//父节点
+vector<vector<int>> anc;//2^i个祖先节点,跳过根节点则用-1表示
+
+vector<int> depth;//每个节点的深度,根节点深度为0
+int dfs_depth(vector<int> &parent,int curr)
 {
-    if(height[curr]!=-1) return height[curr];
-    return height[curr]=1+dph(parent,parent[curr]);
+    if(depth[curr]!=-1) return depth[curr];
+    return depth[curr]=1+dfs_depth(parent,parent[curr]);
 }
 
+//先计算每个节点2^i个祖先
+void Init(int n, vector<int>& parent) {
+    anc.assign(n,vector<int>(LOGSIZE,-1));
+    this->N=n;
+    for(int i=0;i<N;++i)
+    {
+        anc[i][0]=parent[i];
+    }
+    for(int j=1;j<LOGSIZE;++j)
+    {
+        for(int i=0;i<N;++i)
+        {
+            if(anc[i][j-1]!=-1)
+            {
+                anc[i][j]=anc[anc[i][j-1]][j-1];
+            }
+        }
+    }
+}
+
+//计算某个节点的第k个祖先节点
+//总体的思想是从起始点开始，对要上溯的k值的每个bit位，依次尝试向上查找
+//如果没有超过根结点，且仍然可以向上找（没有找到），就向上移动。
+int getKthAncestor(int curr, int k) {
+    for(int b=0;k!=0;k>>=1,++b)
+    {
+        if((k&1)==0) continue;
+        if(anc[curr][b]==-1) return -1;
+        curr=anc[curr][b];
+    }
+    return curr;
+}
+
+//也可以通过dp的方式自顶向下地求,不太直观
 int dp(int curr,int pre2)
 {
     if(mem[curr][pre2]!=-2) return mem[curr][pre2];
@@ -29,11 +66,11 @@ int dp(int curr,int pre2)
 
 void Init(int n, vector<int> &parent)
 {
-    height.assign(n,-1);
-    height[0]=0;
+    depth.assign(n,-1);
+    depth[0]=0;
     for(int i=1;i<n;++i)
     {
-        height[i]=dph(parent,i);
+        depth[i]=dph(parent,i);
     }
     mem.assign(n,vector<int>(16,-2));//2^16>=节点总数
     for(int i=0;i<n;++i)
@@ -44,7 +81,7 @@ void Init(int n, vector<int> &parent)
 
 int Query(int node, int k)
 {
-    if(k>height[node]) return -1;
+    if(k>depth[node]) return -1;
     for(int i=0;k!=0;++i,k>>=1)
     {
         if((k&1)!=0)
@@ -54,37 +91,6 @@ int Query(int node, int k)
     }
     return node;
 }
-
-//事先计算每个状态值的版本
-int mem[SIZE][LOGSIZE];
-memset(mem,-1,sizeof(int)*N*LOGSIZE);
-for(int i=0;i<N;++i)
-{
-    mem[i][0]=parent[i];
-}
-for(int j=1;j<LOGSIZE;++j)
-{
-    for(int i=0;i<N;++i)
-    {
-        if(mem[i][j-1]!=-1)
-        {
-            mem[i][j]=mem[mem[i][j-1]][j-1];
-        }
-    }
-}
-
-//计算时从最高bit位开始依次尝试
-for(int b=LOGSIZE-1;b>=0;--b)
-{
-    if(mem[Y][b]!=-1 && /*仍不满足条件*/)
-    {
-        Y=mem[Y][b];
-    }
-}
-Y=parent[Y];
-总体的思想是从起始点开始，从要上溯的k值的最高bit位开始，依次尝试向上查找
-如果没有超过根结点，且仍然可以向上找（没有找到），就向上移动。
-最终会找到结果结点的子结点，它的父结点即为所求。(似乎找到的就是目标结点)
 
 倍增法(Binary Lifting)可以用于求结点的最小公共祖先：
 先将深度较大的结点向上跳直到两个结点深度一致。如果两个结点重合，那该结点即所求
