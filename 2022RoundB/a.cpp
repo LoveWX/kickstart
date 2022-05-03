@@ -10,7 +10,7 @@ int main()
     for(int icase=1;icase<=ncase;++icase)
     {
         int R,A,B;
-        cin>>R>>A>> B;
+        cin>>R>>A>>B;
         double ans=0.0;
         while(R!=0)
         {
