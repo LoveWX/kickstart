@@ -68,3 +68,59 @@ void init()
 }
 
 树状数组从普通数组构建需要O(n)，查询前缀和O(logn)，单点更新O(logn)，区间更新O(n)，空间O(n)
+以上就是树状数组单点修改，区间查询的操作。
+树状数组也可以用于区间修改，单点查询和区间修改，区间查询的操作。
+对于原数组a，为了进行区间修改，可以引入差分数组d，d[i]=a[i]-a[i-1]
+这样就有：a[i]=d[1]+d[2]+...+d[i]
+即：a[i]=sigma(j=1,i,d[j])
+这样数组d就能表示数组a的全部元素了。而区间修改可以在差分数组上完成。
+对于操作：将数组a上区间[le,ri]的元素增加diff，可以等价于数组d上：
+void rangeUpdate(vector<int> &d,int le,int ri,int diff)
+{
+    d[le]+=diff;
+    d[ri+1]-=diff;
+}
+
+而a[i]的值，只要在差分数组上求前缀和即可。
+
+对于区间查询操作，同样需要转换到差分数组上操作：
+sigma(1,x,a) = sigma(i=1,x,sigma(j=1,i,d[j]))
+             = sigma(i=1,x,d[j]*(x-i+1))
+             = (x+1)*sigma(j=1,x,d[j]) - sigma(j=1,x,d[j]*j)
+这样，需要再引入数组c，使得c[i]=d[i]*i，即可使用数组d和c完成区间查询的操作
+long long prefixsum(vector<long long> &bit,int idx)
+{
+    long long sum=0;
+    while(idx!=0)
+    {
+        sum+=bit[idx];
+        idx-=(idx & -idx);
+    }
+    return sum;
+}
+long long prefixSum(int idx)
+{
+    return (idx+1)*prefixsum(d,idx)-prefixsum(c,idx);
+}
+long long rangeSum(int idx1,int idx2)
+{
+    return prefixSum(idx2)-prefixSum(idx1-1);
+}
+
+当然在进行区间修改时，操作也需要修改：
+void update(vector<long long> &bit,int idx,long long diff)
+{
+    while(idx<=n)
+    {
+        bit[idx]+=diff;
+        idx+=(idx & -idx);
+    }
+}
+void rangeUpdate(int idx1,int idx2,long long diff)
+{
+    update(d,idx1,diff);
+    update(c,idx1,diff*idx1);
+    update(d,idx2+1,-diff);
+    update(c,idx2+1,-diff*(idx2+1));
+}
+注意这里的数组c只在更新时才会乘上系数，而求前缀和时，c[i]=d[i]*i，不需要再乘系数
