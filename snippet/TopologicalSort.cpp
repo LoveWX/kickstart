@@ -55,9 +55,9 @@ vector<int> indegree;
 vector<int> ans;
 void dfs(int curr)
 {
-    ans.push_back(curr);
     if((--indegree[curr])<=0)
     {
+        ans.push_back(curr);
         for(int i:adjedges[curr])
         {
             dfs(i);
