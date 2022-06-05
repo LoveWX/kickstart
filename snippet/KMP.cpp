@@ -21,29 +21,17 @@
 
 class Solution {
 public:
-    vector<int> next;
-    int nsrc,npattern;
-    int strStr(string haystack, string needle) {
-        if(needle.empty())
-        {
-            return 0;
-        }
-        nsrc=haystack.size();
-        npattern=needle.size();
-        next.assign(npattern,0);
-        calcPMT(needle);
-        return KMP(haystack,needle);
-    }
-    void calcPMT(string &p)
+    void CalcPMT(string &pat,vector<int> &next)
     {
+        int n=pat.size();
         next[0]=-1;
         int i=0,j=-1;
-        while(i<npattern-1) //i==npattern-1时会越界
+        while(i<n-1)
         {
-            if(j==-1 || p[i]==p[j])
+            if(j==-1 || pat[i]==pat[j])
             {
-                ++i;
-                ++j;
+                i+=1;
+                j+=1;
                 next[i]=j;
             }
             else
@@ -52,25 +40,29 @@ public:
             }
         }
     }
-    int KMP(string &src,string &pat)
+    int KMP(string &src,string &pat,vector<int> &next)
     {
+        int ns=src.size(),np=pat.size();
         int i=0,j=0;
-        while(i<nsrc && j<npattern)
+        while(i<ns && j<np)
         {
             if(j==-1 || src[i]==pat[j])
             {
-                ++i;
-                ++j;
+                i+=1;
+                j+=1;
             }
             else
             {
                 j=next[j];
             }
         }
-        if(j==npattern)
-        {
-            return i-j;
-        }
+        if(j==np) return i-j;
         return -1;
+    }
+    int strStr(string src, string pat) {
+        if(pat.empty()) return 0;
+        vector<int> next(pat.size());
+        CalcPMT(pat,next);
+        return KMP(src,pat,next);
     }
 };
