@@ -65,8 +65,8 @@ ThreadPool::ThreadPool(int size)
 
 void ThreadPool::AddTask(Task &newTask)
 {
-    if(stop) return;
     std::unique_lock<std::mutex> lock(mtx);
+    if(stop) return;
     taskQueue.emplace(newTask);
     lock.unlock();
     cond.notify_one();
