@@ -19,7 +19,9 @@ struct Task
     }
     void operator()()
     {
-        std::cout<<idx*idx<<std::endl;
+        std::cout << "hello " << idx << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::cout << "world " << idx << std::endl;
     }
     int idx;
 };
@@ -87,9 +89,8 @@ int main()
     ThreadPool pool(4);
     for(int i=0;i<8;++i)
     {
-        std::cout << "hello " << i << std::endl;
-        pool.AddTask(Task(i));
-        std::cout << "world " << i << std::endl;
+        Task t;
+        pool.AddTask(t);
     }
 
     return 0;
