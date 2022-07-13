@@ -89,7 +89,7 @@ int main()
     ThreadPool pool(4);
     for(int i=0;i<8;++i)
     {
-        Task t;
+        Task t(i);
         pool.AddTask(t);
     }
 
