@@ -6,6 +6,52 @@
 // Ackerman函数增长极慢，可以想到的n，Ackerman^-1(n)<=5
 // 所以带rank数组的并查集查找和合并效率可近似为常数级
 
+//封装
+struct UnionFind
+{
+    int n;
+    vector<int> parent;
+    vector<int> rank;
+    UnionFind(int n)
+    {
+        parent.assign(n,0);
+        for(int i=1;i<n;++i)
+        {
+            parent[i]=i;
+        }
+        rank.assign(n,0);
+    }
+    int findr(int x)
+    {
+        int r=x;
+        for(;r!=parent[r];r=parent[r]);
+        for(int i=x;r!=parent[i];)
+        {
+            int j=parent[i];
+            parent[i]=r;
+            i=j;
+        }
+        return r;
+    }
+    void unionr(int x,int y)
+    {
+        int rx=findr(x),ry=findr(y);
+        if(rank[rx]<rank[ry])
+        {
+            parent[rx]=ry;
+        }
+        else if(rank[rx]>rank[ry])
+        {
+            parent[ry]=rx;
+        }
+        else
+        {
+            parent[ry]=rx;
+            rank[rx]+=1;
+        }
+    }
+};
+
 int n;
 vector<int> parent;
 vector<int> rank;
