@@ -1,0 +1,67 @@
+//只考虑坐标轴上的整数点。一些相邻的点构成一个区间,如[3,16]等。
+//对坐标轴上的这些区间进行维护,保证a.区间两两之间不会重叠;b.相邻的区间会合并为它们的并集
+//主要的操作有：1.插入一个新的区间,返回实际插入的整点的数目.如果需要则合并重叠或相邻的其它区间
+//2.删除一个区间内的所有整点,返回实际删除的整点的数目.需要更新删除了部分整点的区间信息
+//每个区间[le,ri]使用map进行存储,m[ri]=le,即使用区间右端点作为map的key,区间左端点作为相应的value
+//由于区间[l1,r1],[l2,r2]相交等价于l1<=r2 && l2<=r1,
+//使用上述的结构便于使用map的lower_bound操作计算出和输入区间相交的坐标最小的区间
+
+struct SegmentSet
+{
+    map<int,int> m;
+    SegmentSet()
+    {
+        m[INT_MIN]=INT_MIN;
+        m[INT_MAX]=INT_MAX;
+    }
+    int Insert(int le,int ri)
+    {
+        int ans=0;
+        auto it=m.lower_bound(le);
+        auto it0=prev(it);
+        if(it0->first+1==le)
+        {
+            le=it0->second;
+            ans-=it0->first-it0->second+1;
+            m.erase(it0);
+        }
+        for(;it->second-1<=ri;)
+        {
+            le=min(le,it->second);
+            ri=max(ri,it->first);
+            ans-=it->first-it->second+1;
+            m.erase(it++);
+        }
+        m[ri]=le;
+        ans+=ri-le+1;
+        return ans;
+    }
+    int Remove(int le,int ri)
+    {
+        int ans=0;
+        for(auto it=m.lower_bound(le);it->second<=ri;)
+        {
+            if(it->second<le)
+            {
+                m[le-1]=it->second;
+            }
+            else
+            {
+                le=it->second;
+            }
+            if(ri<it->first)
+            {
+                it->second=ri+1;
+                ans+=ri-le+1;
+                break;
+            }
+            ans+=it->first-le+1;
+            m.erase(it++);
+        }
+        return ans;
+    }
+    bool Empty()
+    {
+        return m.size()==2U;
+    }
+};
