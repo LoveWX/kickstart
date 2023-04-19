@@ -2,14 +2,91 @@
 对任何整数a、b和m，关于未知数x和y的线性丢番图方程（称为裴蜀等式）：
     ax+by=m
 有整数解时当且仅当m是a及b的最大公约数d的倍数。
-裴蜀等式有解时必然有无穷多个整数解，每组解x、y都称为裴蜀数，可用扩展欧几里得算法求得。
+裴蜀等式有解时必然有无穷多个整数解，每组解x、y都称为裴蜀系数，可用扩展欧几里得算法求得。
 特别来说，方程 ax+by=1 有整数解当且仅当整数a和b互素。
 
-设d是a和b的最大公约数，在方程 ax+by=m 中，m=m0*d，如果有解，则方程有无穷多组解：
-x=(m0*x0)+k*b/d
-y=(m0*y0)-k*a/d
-其中k为任意整数,(x0,y0)为方程 ax+by=d 的一个解，可用辗转相除法求得
+设d是a和b的最大公约数，在方程 ax+by=m 中，如果有解，则方程有无穷多组解：
+x=(m/d*x0)+k*b/d
+y=(m/d*y0)-k*a/d
+其中k为任意整数,(x0,y0)为方程 ax+by=d 的一个特解，可用扩展欧几里德算法求得。
 
 多个整数间的裴蜀定理
 设a1,...,an为n个整数，d是它们的最大公约数，那么存在整数x1,...,xn使得x1*a1+...+xn*an=d。当然，x1*a1+...+xn*an=md也有解。
 特别地，如果a1,...,an互质（不是两两互质），那么存在整数x1,...,xn使得x1*a1+...+xn*an=1。
+
+扩展欧几里德算法
+在标准的欧几里得算法中，我们记欲求最大公约数的两个数为a,b，第i步带余除法得到的商为q[i]，余数为r[i+1]，则欧几里得算法可以写成如下形式：
+r[0]=a, r[1]=b, ... ,r[i+1]=r[i-1]-q[i]*r[i]
+当某步得到r[i+1]=0时结束，上一步得到的r[i]即为a,b的最大公约数。
+扩展欧几里德算法在此基础上增加了两组序列s[i]和t[i]，并令s[0]=1,s[1]=0,t[0]=0,t[1]=1
+每步额外计算s[i+1]=s[i-1]-q[i]*s[i]和t[i+1]=t[i-1]-q[i]*t[i]
+当某步得到r[i+1]=0时结束，此时所得的s[i]和t[i]满足等式a*s[i]+b*t[i]=r[i]=gcd(a,b)
+用归纳法可以证明  a*s[i]+b*t[i]=r[i]  (1)
+当i=0,i=1时容易验证
+当i>1时有：
+r[i+1]
+=r[i-1]-r[i]*q[i]
+=(a*s[i-1]+b*t[i-1])-(a*s[i]+b*t[i])*q[i]
+=(a*s[i-1]-a*s[i]*q[i])+(b*t[i-1]-b*t[i]*q[i])
+=a*s[i+1]+b*t[i+1]
+由归纳法可知式(1)成立，证毕
+这里的s[i]和t[i]称为裴蜀系数，是方程 ax+by=gcd(a,b) 的最简特解
+并满足|x|<=|b/d|, |y|<=|a/d|，当a,b其中一个整除另一个时等号成立
+
+//Extended Euclidean algorithm to calculate s,t,gcd(a,b) while as+bt=gcd(a,b)
+//input:{r0,r1}={a,b}; output:{s,t,gcd(a,b)}
+array<int64_t,3> ExtendedEuclidean(int64_t r0,int64_t r1)
+{
+    int64_t s0=1,s1=0;
+    int64_t t0=0,t1=1;
+    for(;r1!=0;)
+    {
+        int64_t q=r0/r1;
+        int64_t tmpr=r0-r1*q;
+        r0=r1;
+        r1=tmpr;
+        int64_t tmps=s0-q*s1;
+        s0=s1;
+        s1=tmps;
+        int64_t tmpt=t0-q*t1;
+        t0=t1;
+        t1=tmpt;
+    }
+    return {s0,t0,r0};
+}
+
+//The General Solution of Bezouts Equation ax+by=m is {x0+k*b/gcd(a,b),y=y0-k*a/gcd(a,b)}
+//output:{x0,b,y0,a}; or empty if no solution
+vector<int64_t> BezoutsEquation(int64_t a,int64_t b,int64_t m)
+{
+    auto coef=ExtendedEuclidean(a,b);
+    if(m%coef[2]!=0) return {};
+    m/=coef[2];
+    return {m*coef[0],b/coef[2],m*coef[1],a/coef[2]};
+}
+
+也可以先通过最大公约数先计算裴蜀等式是否有解。
+但是要注意这里的最大公约数是带符号的。C++17中提供的gcd()是无符号的。
+int64_t gcd_signed(int64_t a,int64_t b)
+{
+    for(;b!=0;)
+    {
+        int64_t t=a%b;
+        a=b;
+        b=t;
+    }
+    return a;
+}
+
+//The General Solution of Bezouts Equation ax+by=m is {x0+k*b/gcd(a,b),y=y0-k*a/gcd(a,b)}
+//output:{x0,b,y0,a}; or empty if no solution
+vector<int64_t> BezoutsEquation(int64_t a,int64_t b,int64_t m)
+{
+    int64_t d=gcd_signed(a,b);
+    if(m%d!=0) return {}; // No Solution
+    a/=d;
+    b/=d;
+    m/=d;
+    auto coef=ExtendedEuclidean(a,b);
+    return {m*coef[0],b,m*coef[1],a};
+}
