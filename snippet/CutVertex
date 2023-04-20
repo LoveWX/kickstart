@@ -1,0 +1,96 @@
+无向连通图中，去掉一个点及和它相邻的所有边，图中的连通分量数增加，则该点称为割点;
+去掉一条边，图中的连通分量数增加，则该边称为桥或者割边。
+割点与桥（割边）的关系：
+1）有割点不一定有桥,有桥一定存在割点
+2）桥一定是割点依附的边。
+
+Tarjan算法可以在O(V+E)时间内求出所有的割点，
+主要思想是遍历时通过depth-first-search tree中每个点加入时间戳
+当访问到某个已经访问过的结点时，说明已经通过可以不经过DFS树的父节点访问到祖先结点
+因此父结点不是割点。
+需要新建几个数组来存储信息：
+1.depth数组，用于存储访问结点的时间戳
+2.low数组，表示DFS中某点不通过其父结点能访问到的祖先结点中最小的时间戳。
+3.parent数组，存储DFS中某个结点的父结点。DFS起始点的值为-1。
+4.visited数组，表示某个点是否已经访问过
+
+每个结点初始的low值和depth值应该一样，在DFS中，根据情况不断更新low的值。
+假设DFS中由结点U访问到结点V。如果结点V已经被访问，那么将depth[V]来更新low[U]
+否则当从结点V回溯到结点U时，需要用low[V]来更新low[U]
+从结点V回溯到结点U后，如果有low[V]<depth[U]，即说明结点V可以不通过结点U访问到结点U的祖先结点；
+反之，如果有low[V]>=depth[U]，即说明结点V必须通过结点U才能访问到结点U的祖先结点；这时结点U即为割点。
+注意DFS树的根结点不能这样判断。如果根结点的子结点数量多于1个，则根结点为割点。
+
+对于结点U及其子结点V而言，如果low[V] > depth[U]，那么边(U,V)为割边，
+因为结点V必须通过该边访问到结点U的祖先结点。
+
+注意需要传入结点个数n和邻接表。先计算割点，然后可以选择用parent数组、low数组和depth数组计算割边
+// CutVertex cv;
+// vector<bool> isCutPoint=cv.CalcCutVertex(L+N,edge);
+// vector<array<int,2>> bridges=cv.CalcBridges();
+
+struct CutVertex
+{
+    int n;
+    vector<vector<int>> adj;
+    vector<bool> visited;
+    vector<int> depth;
+    vector<int> low;
+    vector<int> parent;
+    vector<bool> isArticulation;
+    vector<bool> CalcCutVertex(int n,vector<vector<int>> &edge)
+    {
+        this->n=n;
+        adj=move(edge);
+        visited.assign(n,false);
+        depth.assign(n,0);
+        low.assign(n,0);
+        parent.assign(n,-1);
+        isArticulation.assign(n,false);
+        GetArticulationPoints(0,1);
+        edge=move(adj);
+        return isArticulation;
+    }
+    void GetArticulationPoints(int i,int d)
+    {
+        visited[i]=true;
+        depth[i]=d;
+        low[i]=d;
+        int childCount=0;
+        for(int ni:adj[i])
+        {
+            if(!visited[ni])
+            {
+                parent[ni]=i;
+                GetArticulationPoints(ni,d+1);
+                childCount+=1;
+                if(low[ni]>=depth[i])
+                {
+                    isArticulation[i]=true;
+                }
+                low[i]=min(low[i],low[ni]);
+            }
+            else if(ni!=parent[i])
+            {
+                low[i]=min(low[i],depth[ni]);
+            }
+        }
+        if(parent[i]<0)
+        {
+            isArticulation[i]=(childCount>1);
+        }
+    }
+    vector<array<int,2>> CalcBridges()
+    {
+        vector<array<int,2>> ans;
+        for(int i=0;i<n;++i)
+        {
+            if(parent[i]<0) continue;
+            if(low[i]>depth[parent[i]])
+            {
+                ans.push_back({parent[i],i});
+            }
+        }
+        return ans;
+    }
+};
