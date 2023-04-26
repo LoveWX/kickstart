@@ -1,0 +1,82 @@
+struct SegTree
+{
+    //区间修改increase,区间查询max
+    int n;
+    vector<int> t;
+    int h;
+    vector<int> d;
+    void Build(int size)
+    {
+        n=size;
+        h=sizeof(int)*8-__builtin_clz(n);
+        t.assign(n*2,0);
+        d.assign(n,0);
+    }
+    void Build(vector<int> &vi)
+    {
+        n=vi.size();
+        h=sizeof(int)*8-__builtin_clz(n);
+        t.assign(n*2,0);
+        d.assign(n,0);
+        for(int i=0;i<n;++i)
+        {
+            t[i+n]=vi[i];
+        }
+        for(int i=n-1;i>0;--i)
+        {
+            t[i]=max(t[i<<1],t[i<<1|1]);
+        }
+    }
+    void Apply(int p,int val)
+    {
+        t[p]+=val;
+        if(p<n) d[p]+=val;
+    }
+    void PushUp(int p)
+    {
+        while(p>1)
+        {
+            p>>=1;
+            t[p]=max(t[p<<1],t[p<<1|1])+d[p];
+        }
+    }
+    void PushDown(int p)
+    {
+        for(int s=h;s>0;--s)
+        {
+            int i=p>>s;
+            if(d[i]!=0)
+            {
+                Apply(i<<1,d[i]);
+                Apply(i<<1|1,d[i]);
+            }
+            d[i]=0;
+        }
+    }
+    void Modify(int le,int ri,int val)
+    {
+        le+=n;
+        ri+=n;
+        for(int l=le,r=ri;l<r;l>>=1,r>>=1)
+        {
+            if(l&1) Apply(l++,val);
+            if(r&1) Apply(--r,val);
+        }
+        PushUp(le);
+        PushUp(ri-1);
+    }
+    int Query(int l,int r)
+    {
+        l+=n;
+        r+=n;
+        PushDown(l);
+        PushDown(r-1);
+        int ans=INT_MIN;
+        for(;l<r;l>>=1,r>>=1)
+        {
+            if(l&1) ans=max(ans,t[l++]);
+            if(r&1) ans=max(t[--r],ans);
+        }
+        return ans;
+    }
+};
