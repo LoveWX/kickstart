@@ -1,0 +1,121 @@
+//查询区间最小值,可修改成求区间最大值
+struct RMQ
+{
+    int n;
+    vector<int> log2;
+    vector<vector<int>> rmq;
+    void Build(vector<int> &vi)
+    {
+        n=vi.size();
+        log2.assign(n+1,0);
+        for(int i=2;i<=n;++i)
+        {
+            log2[i]=log2[i/2]+1;
+        }
+        rmq.assign(log2[n]+1,vector<int>(n));
+        rmq[0]=vi;
+        for(int p=1;p<=log2[n];++p)
+        {
+            for(int j=0;j+(1<<p)-1<n;++j)
+            {
+                rmq[p][j]=min(rmq[p-1][j],rmq[p-1][j+(1<<(p-1))]);
+            }
+        }
+    }
+    int Query(int le,int ri)
+    {
+        int p=log2[ri-le+1];
+        return min(rmq[p][le],rmq[p][ri-(1<<p)+1]);
+    }
+};
+
+//求区间和,可以修改成求区间乘积,gcd等
+struct RMQSum
+{
+    int n;
+    vector<int> log2;
+    vector<vector<long long>> rmq;
+    void Build(vector<long long> &vi)
+    {
+        n=vi.size();
+        log2.assign(n+1,0);
+        for(int i=2;i<=n;++i)
+        {
+            log2[i]=log2[i/2]+1;
+        }
+        rmq.assign(log2[n]+1,vector<long long>(n));
+        rmq[0]=vi;
+        for(int p=1;p<=log2[n];++p)
+        {
+            for(int j=0;j+(1<<p)-1<n;++j)
+            {
+                rmq[p][j]=rmq[p-1][j]+rmq[p-1][j+(1<<(p-1))];
+            }
+        }
+    }
+    int Query(int le,int ri)
+    {
+        long long ans=0;
+        for(int p=log2[ri-le+1];le<=ri;p=log2[ri-le+1])
+        {
+            ans+=rmq[p][le];
+            le+=(1<<p);
+        }
+        return ans;
+    }
+};
+
+//求区间最小值,也可以求最小值所在的下标,相同值取最左侧的下标
+struct RMQIdx
+{
+    int n;
+    vector<int> log2;
+    vector<vector<int>> rmq;
+    vector<vector<int>> idx;
+    void Build(vector<int> &vi)
+    {
+        n=vi.size();
+        log2.assign(n+1,0);
+        for(int i=2;i<=n;++i)
+        {
+            log2[i]=log2[i/2]+1;
+        }
+        rmq.assign(log2[n]+1,vector<int>(n));
+        rmq[0]=vi;
+        idx.assign(log2[n]+1,vector<int>(n));
+        for(int i=0;i<n;++i)
+        {
+            idx[0][i]=i;
+        }
+        for(int p=1;p<=log2[n];++p)
+        {
+            for(int j=0;j+(1<<p)-1<n;++j)
+            {
+                int lval=rmq[p-1][j];
+                int rval=rmq[p-1][j+(1<<(p-1))];
+                rmq[p][j]=min(lval,rval);
+                if(lval<=rval)
+                {
+                    idx[p][j]=idx[p-1][j];
+                }
+                else
+                {
+                    idx[p][j]=idx[p-1][j+(1<<(p-1))];
+                }
+            }
+        }
+    }
+    int Query(int le,int ri)
+    {
+        int p=log2[ri-le+1];
+        return min(rmq[p][le],rmq[p][ri-(1<<p)+1]);
+    }
+    int QueryIdx(int le,int ri)
+    {
+        int p=log2[ri-le+1];
+        int left=rmq[p][le];
+        int right=rmq[p][ri-(1<<p)+1];
+        if(left<=right) return idx[p][le];
+        return idx[p][ri-(1<<p)+1];
+    }
+};
