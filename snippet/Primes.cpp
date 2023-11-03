@@ -35,3 +35,20 @@ const static vector<int> vprime={2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,
     809,811,821,823,827,829,839,853,857,859,863,877,881,883,887,
     907,911,919,929,937,941,947,953,967,971,977,983,991,997};
 
+//质因数分解
+vector<array<int,2>> Decompose(int a)
+{
+    vector<array<int,2>> vp;
+    for(int p:vprime)
+    {
+        if(a==1) break;
+        if(a%p==0)
+        {
+            int c=1;
+            for(a/=p;a%p==0;++c,a/=p);
+            vp.push_back({p,c});
+        }
+    }
+    if(a>1) vp.push_back({a,1});
+    return vp;
+}
