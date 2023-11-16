@@ -1,0 +1,81 @@
+1.Kosaraju算法可以在线性时间内找到你有向图的强连通分量。
+该算法利用了一个性质:原图和它的转置图(各边方向反转)有相同的强连通分量scc。
+Kosaraju算法需要分别对原图G和逆图GT进行两遍DFS:
+1)对原图G进行深度优先搜索，记录每个结点的完成时间(时间戳)，可以在访问某点将要回溯之前给该点附加时间戳，也就是后序遍历。
+2)选择时间戳最大的结点在逆图GT上进行深度优先搜索。该结点及其能到达的点构成一个强连通分量
+3)如果有结点未被遍历，重复步骤2)，直到每个结点都被遍历
+两次DFS结束后，强连通分量就找出来了。时间复杂度为 O(V+E)
+另外需要注意的是：在找到所有强连通分量之后将每个强连通分量缩点变成一个点，设得到的新图为GC，
+则算法中得出的scc转换为GC上的点之后，已经是GC上的一个拓扑序。
+特别地，如果原图G中的每个点都是scc，那么得到的scc次序就是原图G的拓扑序
+可以从特殊情况开始简单证明：如果原图每个点都是scc，那么在第一次DFS时，每个因未遍历而开始DFS的点，都会依序遍历它能到达的其它各点
+并且由于后序遍历的特点，该点会在其后代结点之后再打上较大的时间戳
+这样在第二次DFS时，该点就会先于其后代结点开始DFS，也就会在拓扑序中位于其后代结点的前面
+而对于该点的祖先结点，之后遍历时时间戳一定会比该点要大，拓扑序中在也会在该点前面
+再考虑缩点的情况，每个scc中都缩到该scc第一个点，也就是时间戳最大的那个点，这样就转换为无缩点的情况。
+
+struct SCC
+{
+    vector<vector<int>> g1,g2;//g1原图,g2转置图
+    vector<int> color;//下标处点属于哪个scc
+    int sccCnt;//scc的总个数
+    vector<vector<int>> scc;//每个vector中存放一个scc中的结点,已经是scc缩点后的拓扑序排列
+    void Build(int n,vector<vector<int>> &edges)
+    {
+        g1.assign(n,vector<int>());
+        g2.assign(n,vector<int>());
+        for(vector<int> &e:edges)
+        {
+            g1[e[0]].push_back(e[1]);
+            g2[e[1]].push_back(e[0]);
+        }
+        vector<bool> visit1(n,false);
+        vector<int> seq;
+        seq.reserve(n);
+        for(int i=0;i<n;++i)
+        {
+            if(!visit1[i])
+            {
+                dfs1(i,visit1,seq);
+            }
+        }
+        sccCnt=0;
+        color.assign(n,-1);
+        for(int i=n-1;i>=0;--i)
+        {
+            if(color[seq[i]]<0)
+            {
+                dfs2(seq[i],color,sccCnt++);
+            }
+        }
+        scc.assign(sccCnt,vector<int>());
+        for(int i=0;i<n;++i)
+        {
+            scc[color[i]].push_back(i);
+        }
+    }
+    void dfs1(int curr,vector<bool> &visit,vector<int> &seq)
+    {
+        visit[curr]=true;
+        for(int i:g1[curr])
+        {
+            if(!visit[i])
+            {
+                dfs1(i,visit,seq);
+            }
+        }
+        seq.push_back(curr);
+    }
+    void dfs2(int curr,vector<int> &color,int sccIdx)
+    {
+        color[curr]=sccIdx;
+        for(int i:g2[curr])
+        {
+            if(color[i]<0)
+            {
+                dfs2(i,color,sccIdx);
+            }
+        }
+    }
+};
+
