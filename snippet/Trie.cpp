@@ -17,33 +17,245 @@ struct TrieNode
         isend=false;
         for(int i=0;i<26;++i)
         {
-            c[i]=NULL;
+            c[i]=nullptr;
         }
     }
 };
 
 //插入操作
-//insert(root,s,0);
-void insert(TrieNode *curr,string &s,int pos)
+//Insert(root,s,0);
+void Insert(TrieNode *curr,string &s,int pos)
 {
-	if(pos==s.length())
-	{
-		curr->isend=true;
-		return;
-	}
-	TrieNode *&p=curr->c[s[pos]-'a'];
-	if(p==NULL)
-	{
-		p=new TrieNode;
-	}
-	insert(p,s,pos+1);
+    if(pos==s.size())
+    {
+        curr->isend=true;
+        return;
+    }
+    TrieNode *&p=curr->c[s[pos]-'a'];
+    if(p==nullptr)
+    {
+        p=new TrieNode;
+    }
+    Insert(p,s,pos+1);
 }
 
 //查找操作
 //search(root,s,0)
-bool search(TrieNode *curr,string &s,int pos)
+bool Search(TrieNode *curr,string &s,int pos)
 {
-	if(curr==NULL) return false;
-	if(pos==s.length()) return curr->isend;
-	return search(curr->c[s[pos]-'a'],s,pos+1);
+    if(curr==nullptr) return false;
+    if(pos==s.size()) return curr->isend;
+    return Search(curr->c[s[pos]-'a'],s,pos+1);
 }
+
+//简化版本end
+
+//也可以使用循环代替递归以减小函数调用开销.以下是封装的循环版本,其中多了StartWith的操作
+struct TrieNode
+{
+    bool isend;
+    TrieNode *c[26];
+    TrieNode()
+    {
+        isend=false;
+        for(int i=0;i<26;++i)
+        {
+            c[i]=nullptr;
+        }
+    }
+};
+
+struct Trie
+{
+    TrieNode *root;
+    Trie()
+    {
+        root=new TrieNode;
+    }
+    void insert(string &word)
+    {
+        TrieNode *curr=root;
+        for(char c:word)
+        {
+            TrieNode *&p=curr->c[c-'a'];
+            if(p==nullptr) p=new TrieNode;
+            curr=p;
+        }
+        curr->isend=true;
+    }
+    bool search(string &word)
+    {
+        TrieNode *curr=root;
+        for(char c:word)
+        {
+            TrieNode *&p=curr->c[c-'a'];
+            if(p==nullptr) return false;
+            curr=p;
+        }
+        return curr->isend;
+    }
+    bool startsWith(string &prefix)
+    {
+        TrieNode *curr=root;
+        for(char c:prefix)
+        {
+            TrieNode *&p=curr->c[c-'a'];
+            if(p==nullptr) return false;
+            curr=p;
+        }
+        return true;
+    }
+};
+
+//封装的循环版本end
+
+//也可以加入Remove,但是要注意删除操作需要在每个结点中增加cnt域,标识该结点的使用次数/是多少个字符串的前缀
+//在成功删除字符串时,相关结点的使用次数均减1.
+//可以不用在Remove操作中delete结点,但是这样StartsWith操作也需要判断cnt域才能判断某个前缀是否存在
+struct TrieNode
+{
+    bool isend;
+    int cnt;
+    TrieNode *c[26];
+    TrieNode()
+    {
+        isend=false;
+        cnt=0;
+        for(int i=0;i<26;++i)
+        {
+            c[i]=nullptr;
+        }
+    }
+};
+
+struct Trie
+{
+    TrieNode *root;
+    Trie()
+    {
+        root=new TrieNode;
+    }
+    void insert(TrieNode *curr,string &s,int pos)
+    {
+        curr->cnt+=1;
+        if(pos==s.size())
+        {
+            curr->isend=true;
+            return;
+        }
+        TrieNode *&p=curr->c[s[pos]-'a'];
+        if(p==nullptr) p=new TrieNode;
+        insert(p,s,pos+1);
+    }
+    void Insert(string &s)
+    {
+        insert(root,s,0);
+    }
+    bool search(TrieNode *curr,string &s,int pos)
+    {
+        if(curr==nullptr) return false;
+        if(pos==s.size()) return curr->isend;
+        return search(curr->c[s[pos]-'a'],s,pos+1);
+    }
+    bool Search(string &s)
+    {
+        return search(root,s,0);
+    }
+    bool startsWith(TrieNode *curr,string &s,int pos)
+    {
+        if(curr==nullptr) return false;
+        if(pos==s.size()) return curr->cnt>0;
+        return startsWith(curr->c[s[pos]-'a'],s,pos+1);
+    }
+    bool StartsWith(string &s)
+    {
+        return startsWith(root,s,0);
+    }
+    bool remove(TrieNode *curr,string &s,int pos)
+    {
+        if(curr==nullptr) return false;
+        if(pos==s.size())
+        {
+            bool found=curr->isend;
+            curr->isend=false;
+            curr->cnt-=1;
+            return found;
+        }
+        bool found=remove(curr->c[s[pos]-'a'],s,pos+1);
+        if(found) curr->cnt-=1;
+        return found;
+    }
+    bool Remove(string &s)
+    {
+        return remove(root,s,0);
+    }
+    void dfsDel(TrieNode *curr)
+    {
+        for(TrieNode *p:curr->c)
+        {
+            if(p!=nullptr)
+            {
+                dfsDel(p);
+            }
+        }
+        delete curr;
+    }
+    ~Trie()
+    {
+        dfsDel(root);
+    }
+};
+
+//封装版本_带Remove和析构版本end
+
+//也有一种不用指针的写法,可以将vector当作申请的结点,用下标代替指针来给每个字符分配结点
+struct Trie
+{
+    vector<vector<int>> ch;
+    vector<bool> isend;
+    Trie()
+    {
+        ch.push_back(vector<int>(26,0));
+        isend.push_back(false);
+    }
+    void insert(string &s)
+    {
+        int curr=0;
+        for(char c:s)
+        {
+            int &next=ch[curr][c-'a'];
+            if(next==0)
+            {
+                next=(int)ch.size();
+                ch.push_back(vector<int>(26,0));
+                isend.push_back(false);
+            }
+            curr=next;
+        }
+        isend[curr]=true;
+    }
+    bool search(string &s)
+    {
+        int curr=0;
+        for(char c:s)
+        {
+            int &next=ch[curr][c-'a'];
+            if(next==0) return false;
+            curr=next;
+        }
+        return isend[curr];
+    }
+    bool startsWith(string &s)
+    {
+        int curr=0;
+        for(char c:s)
+        {
+            int &next=ch[curr][c-'a'];
+            if(next==0) return false;
+            curr=next;
+        }
+        return true;
+    }
+};
+
+//封装的数组版本end
