@@ -78,9 +78,7 @@ struct Trie
         return ans;
     }
 };
-
 //带Remove的版本end
-
 //也可以写成数组的形式,但是要注意Remove里面不能直接delete结点,而是需要从叶结点向根结点方向删除
 struct Trie
 {
@@ -132,5 +130,182 @@ struct Trie
         return ans;
     }
 };
-
 //带Remove的数组版本end
+
+//如果将每次插入一个结点之后整个Trie的状态单独保存成一个版本,就可以在之后任意读取之前的历史版本.
+//但是这样时间和空间都会很大.由于Trie树添加一个结点之后,最多只会增加有限个结点:Trie树中增加的是字符串长度,01Trie树增加的是bit位数
+//因此可以"复用"之前的结点来构建"新版本".
+//可以新增一个结点作为新的root结点,同时和前一个版本的结点进行递归插入
+//对于本次新增的子结点,就新建结点作为子结点;对于之前已有的子结点,就通过前一个版本的对应的子结点,挂到现在的结点下
+//这样,新增的结点就可以访问到新建的结点,也可以访问到之前版本的结点
+//另外,需要在各个结点中插入版本号,通常就是插入的序号,这样就可以通过对比版本号控制访问的版本区间,就可以在线回答历史版本区间的问题了
+//具体到01Trie树上,可以用于在线回答区间异或最大值的问题
+//一般预先开辟足够大的空间来存放结点和根结点.注意这里的新增的数从下标1开始
+const static int SIZE=100000;
+
+struct Trie_P
+{
+    const static int BIT=30;//2^30
+    int n,cnt;
+    int root[SIZE];
+    int ch[SIZE*(BIT+1)][2];
+    int ver[SIZE*(BIT+1)];
+    Trie_P()
+    {
+        root[0]=0;
+        n=1;
+        ver[0]=-1;
+        ch[0][0]=ch[0][1]=0;
+        cnt=1;
+    }
+    void Insert(int val)
+    {
+        int currver=n;
+        int last=root[n-1];
+        root[n]=++cnt;
+        int curr=root[n++];
+        ver[curr]=currver;
+        for(int b=BIT;b>=0;--b)
+        {
+            int c=(val>>b)&1;
+            ch[curr][c^1]=ch[last][c^1];
+            ch[curr][c]=++cnt;
+            curr=ch[curr][c];
+            last=ch[last][c];
+            ver[curr]=currver;
+        }
+    }
+    int GetMaxXOR(int L,int R,int val)
+    {
+        int ans=0;
+        int curr=root[R];
+        for(int b=BIT;b>=0;--b)
+        {
+            int c=(val>>b)&1;
+            if(ver[ch[curr][c^1]]>=L)
+            {
+                curr=ch[curr][c^1];
+                ans^=1<<b;
+            }
+            else
+            {
+                curr=ch[curr][c];
+            }
+        }
+        return ans;
+    }
+};
+//预先分配区间版本end
+//也可以使用容器来实现这一点,注意如果开始时知道最大尺寸,可以使用reserve来预先分配空间.
+//注意这里的新增的数从下标1开始
+struct Trie_P
+{
+    const int BIT=30;
+    vector<int> root;
+    vector<array<int,2>> ch;
+    vector<int> ver;
+    Trie_P(int MAXSIZE=0)
+    {
+        if(MAXSIZE>0)
+        {
+            ch.reserve((MAXSIZE+1)*BIT);
+            ver.reserve((MAXSIZE+1)*BIT);
+            root.reserve(MAXSIZE+1);
+        }
+        ch.push_back({0,0});
+        ver.push_back(-1);
+        root.push_back(0);
+    }
+    void Insert(int a)
+    {
+        int currver=root.size();
+        int last=root.back(),curr=ch.size();
+        ch.push_back(array<int,2>());
+        ver.push_back(currver);
+        root.push_back(curr);
+        for(int b=BIT;b>=0;--b)
+        {
+            int c=(a>>b)&1;
+            ch[curr][c^1]=ch[last][c^1];
+            ch[curr][c]=ch.size();
+            ch.push_back(array<int,2>());
+            ver.push_back(currver);
+            curr=ch[curr][c];
+            last=ch[last][c];
+        }
+    }
+    int GetMaxXOR(int L,int R,int val)
+    {
+        int ans=0;
+        int curr=root[R];
+        for(int b=BIT;b>=0;--b)
+        {
+            int c=(val>>b)&1;
+            if(ver[ch[curr][c^1]]>=L)
+            {
+                ans^=1<<b;
+                curr=ch[curr][c^1];
+            }
+            else
+            {
+                curr=ch[curr][c];
+            }
+        }
+        return ans;
+    }
+};
+//容器版本end
+//虽然采用指针临时分配空间可以从下标0开始,也可以节省空间,但是由于新增结点指向之前版本结点,delete时会比较麻烦
+struct TrieNode
+{
+    int ver;
+    TrieNode *p[2];
+    TrieNode()
+    {
+        ver=0;
+        p[0]=p[1]=nullptr;
+    }
+};
+
+struct Trie_P
+{
+    const int BIT=30;
+    vector<TrieNode *> vroot;
+    void Insert(int a)
+    {
+        int currver=vroot.size();
+        TrieNode *last=(vroot.empty() ? nullptr : vroot.back());
+        TrieNode *curr=new TrieNode;
+        curr->ver=currver;
+        vroot.push_back(curr);
+        for(int b=BIT;b>=0;--b)
+        {
+            int c=(a>>b)&1;
+            curr->p[c^1]=(last==nullptr ? nullptr : last->p[c^1]);
+            curr->p[c]=new TrieNode;
+            if(last!=nullptr) last=last->p[c];
+            curr=curr->p[c];
+            curr->ver=currver;
+        }
+    }
+    int GetMaxXOR(int L,int R,int val)
+    {
+        int ans=0;
+        TrieNode *curr=vroot[R];
+        for(int b=BIT;b>=0;--b)
+        {
+            int c=(val>>b)&1;
+            if(curr->p[c^1]!=nullptr && curr->p[c^1]->ver>=L)
+            {
+                ans^=1<<b;
+                curr=curr->p[c^1];
+            }
+            else
+            {
+                curr=curr->p[c];
+            }
+        }
+        return ans;
+    }
+};
+//指针版本end
