@@ -79,7 +79,18 @@ struct Trie
     }
 };
 //带Remove的版本end
-//也可以写成数组的形式,但是要注意Remove里面不能直接delete结点,而是需要从叶结点向根结点方向删除
+//也可以写成循环的形式,但是要注意Remove里面不能直接delete结点,而是需要从叶结点向根结点方向删除
+struct TrieNode
+{
+    int cnt[2];
+    TrieNode *p[2];
+    TrieNode()
+    {
+        cnt[0]=cnt[1]=0;
+        p[0]=p[1]=nullptr;
+    }
+};
+
 struct Trie
 {
     const int MAXBIT=19;
@@ -130,7 +141,7 @@ struct Trie
         return ans;
     }
 };
-//带Remove的数组版本end
+//带Remove的循环版本end
 
 //如果将每次插入一个结点之后整个Trie的状态单独保存成一个版本,就可以在之后任意读取之前的历史版本.
 //但是这样时间和空间都会很大.由于Trie树添加一个结点之后,最多只会增加有限个结点:Trie树中增加的是字符串长度,01Trie树增加的是bit位数
@@ -140,7 +151,7 @@ struct Trie
 //这样,新增的结点就可以访问到新建的结点,也可以访问到之前版本的结点
 //另外,需要在各个结点中插入版本号,通常就是插入的序号,这样就可以通过对比版本号控制访问的版本区间,就可以在线回答历史版本区间的问题了
 //具体到01Trie树上,可以用于在线回答区间异或最大值的问题
-//一般预先开辟足够大的空间来存放结点和根结点.注意这里的新增的数从下标1开始
+//一般预先开辟足够大的空间来存放结点和根结点.
 const static int SIZE=100000;
 
 struct Trie_P
@@ -148,12 +159,11 @@ struct Trie_P
     const static int BIT=30;//2^30
     int n,cnt;
     int root[SIZE];
-    int ch[SIZE*(BIT+1)][2];
-    int ver[SIZE*(BIT+1)];
+    int ch[SIZE*(BIT+1)+1][2];
+    int ver[SIZE*(BIT+1)+1];
     Trie_P()
     {
-        root[0]=0;
-        n=1;
+        n=0;
         ver[0]=-1;
         ch[0][0]=ch[0][1]=0;
         cnt=1;
@@ -161,11 +171,11 @@ struct Trie_P
     void Insert(int val)
     {
         int currver=n;
-        int last=root[n-1];
+        int last=(n==0 ? 0 : root[n-1]);
         root[n]=++cnt;
         int curr=root[n++];
         ver[curr]=currver;
-        for(int b=BIT;b>=0;--b)
+        for(int b=BIT-1;b>=0;--b)
         {
             int c=(val>>b)&1;
             ch[curr][c^1]=ch[last][c^1];
@@ -179,7 +189,7 @@ struct Trie_P
     {
         int ans=0;
         int curr=root[R];
-        for(int b=BIT;b>=0;--b)
+        for(int b=BIT-1;b>=0;--b)
         {
             int c=(val>>b)&1;
             if(ver[ch[curr][c^1]]>=L)
@@ -197,7 +207,6 @@ struct Trie_P
 };
 //预先分配区间版本end
 //也可以使用容器来实现这一点,注意如果开始时知道最大尺寸,可以使用reserve来预先分配空间.
-//注意这里的新增的数从下标1开始
 struct Trie_P
 {
     const int BIT=30;
@@ -208,18 +217,18 @@ struct Trie_P
     {
         if(MAXSIZE>0)
         {
-            ch.reserve((MAXSIZE+1)*BIT);
-            ver.reserve((MAXSIZE+1)*BIT);
-            root.reserve(MAXSIZE+1);
+            ch.reserve(MAXSIZE*(BIT+1)+1);
+            ver.reserve(MAXSIZE*(BIT+1)+1);
+            root.reserve(MAXSIZE);
         }
         ch.push_back({0,0});
         ver.push_back(-1);
-        root.push_back(0);
     }
     void Insert(int a)
     {
         int currver=root.size();
-        int last=root.back(),curr=ch.size();
+        int last=(root.empty() ? 0 : root.back());
+        int curr=ch.size();
         ch.push_back(array<int,2>());
         ver.push_back(currver);
         root.push_back(curr);
