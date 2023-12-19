@@ -17,25 +17,30 @@
 特别地，如果结点P比根结点都大，那么将根结点作为结点P的左子结点即可
 由于每个结点最多进出右链一次，因此总时间复杂度为O(N)
 
-vector<int> lchild(N,-1),rchild(N,-1);
-vector<int> rstk(1,0);//添加第0个元素到右链
-for(int i=1;i<N;++i)
+vector<int> l,r;
+int CartesianTree(vector<int> &a)
 {
-    if(D[rstk[0]]<D[i])
+    int N=a.size();
+    l.assign(N,-1);
+    r.assign(N,-1);
+    vector<int> rstk(1,0);//添加第0个元素到右链
+    for(int i=1;i<N;++i)
     {
-        lchild[i]=rstk[0];
-        rstk={i};
-        continue;
+        int lastpop=-1;
+        while(!rstk.empty() && a[rstk.back()]<a[i])
+        {
+            lastpop=rstk.back();
+            rstk.pop_back();
+        }
+        if(!rstk.empty())
+        {
+            r[rstk.back()]=i;
+        }
+        l[i]=lastpop;
+        rstk.push_back(i);
     }
-    while(D[rstk.back()]<D[i])
-    {
-        rstk.pop_back();
-    }
-    lchild[i]=rchild[rstk.back()];
-    rchild[rstk.back()]=i;
-    rstk.push_back(i);
-}
-//rstk[0]即为笛卡尔树的根结点
+    return rstk[0];
+}//rstk[0]即为笛卡尔树的根结点
 
 /**
  * Definition for a binary tree node.
