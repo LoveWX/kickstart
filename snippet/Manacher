@@ -22,8 +22,8 @@ Manacher算法：
 因为位置j和位置i对称，几乎可以置d1[i]=d1[j]，因为它们都在“外部”回文串内部。
 例外的情况是，“内部”回文串到达“外部”回文串的边界时，即j-d1[j]+1<=l，亦即i+d1[i]-1>=r
 这时应该截断“内部”回文串，即置d1[i]=r-i，再调用朴素算法逐个扩展d1[i]
-这样就求得d1[i]，并需要更新“外部”回文串。
-vector<int> Palindrom(string &s)
+这样就求得d1[i]，并需要更新“外部”回文串。回文串[l,r]的中心下标为(l+r)/2.
+vector<int> ManacherOdd(string &s)
 {
     int n=s.size();
     vector<int> d1(n);
@@ -44,11 +44,11 @@ vector<int> Palindrom(string &s)
     return d1;
 }
 
-对于偶数长度的回文子串，即d2[]，需要稍加调整
-vector<int> Palindrom(string &s)
+对于偶数长度的回文子串，即d2[]，需要稍加调整。回文串[l,r]的中心下标为(l+r+1)/2.
+vector<int> ManacherEven(string &s)
 {
     int n=s.size();
-    vector<int> d1(n);
+    vector<int> d2(n);
     for(int i=0,l=0,r=-1;i<n;++i)
     {
         int k=(i>r ? 0 : min(d2[l+r-i+1],r-i+1));//i的对应位置为l+r-i，但是l+r-i是偶数串回文左中心，右中心是l+r-i+1
@@ -63,7 +63,7 @@ vector<int> Palindrom(string &s)
             r=i+k-1;
         }
     }
-    return d1;
+    return d2;
 }
 
 参考：https://oi-wiki.org/string/manacher/
