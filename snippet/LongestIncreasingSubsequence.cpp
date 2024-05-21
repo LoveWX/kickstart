@@ -27,3 +27,19 @@ int lengthOfLIS(vector<int>& nums)
     }
     return dp.size()-1;
 }
+
+//注意到这里的LIS最长为序列长度，因此dp也可以初始化为长度为n，值为inf的数组。这样就可以将dp数组的扩展和更新统一为一种操作
+//当然求LIS时要去掉最后的值为inf的元素
+//而如果要求以每个元素结尾的(包含该元素的前缀的)LIS，就可以使用这种方式。dp数组的意义类似。
+vector<int> LISLe(vector<int> &x)
+{
+    int n=x.size();
+    vector<int> dp(n,INT_MAX),a(n);
+    for(int i=0;i<n;++i)
+    {
+        auto it=lower_bound(dp.begin(),dp.end(),x[i]);
+        *it=x[i];
+        a[i]=it-dp.begin()+1;
+    }
+    return a;
+}
