@@ -25,10 +25,9 @@ long long C(int n, int m)
 const long long mod=1e9+7;
 const int SIZE=1000000;
 long long fact[SIZE+1];// fact[i] = i! % mod
-long long invFact[SIZE+1]; // invFact[SIZE+1] = (i!)^(-1) % mod
 
 //求a^b%mod
-long long PowerMod(long long a,int b)
+long long PowerMod(long long a,long long b)
 {
     long long ans=1;
     while(b!=0)
@@ -44,7 +43,7 @@ long long PowerMod(long long a,int b)
 }
 
 //利用费马小定理a^(p-1)=1 mod p 可知：a^(-1) = a^(p-2) mod p
-inline long long Inv(long long a,int p=mod-2)
+inline long long Inv(long long a,long long p=mod-2)
 {
     return PowerMod(a,p);
 }
@@ -53,16 +52,13 @@ void Init()
 {
     fact[0]=1;
     fact[1]=1;
-    invFact[0]=1;
-    invFact[1]=1;
     for(int i=2;i<=SIZE;++i)
     {
         fact[i]=fact[i-1]*i%mod;
-        invFact[i]=Inv(fact[i]);
     }
 }
 
 inline long long C(int n,int m)
 {
-    return fact[n]*invFact[m]%mod*invFact[n-m]%mod;
+    return fact[n]*Inv(fact[m])%mod*Inv(fact[n-m])%mod;
 }
