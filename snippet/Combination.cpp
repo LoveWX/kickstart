@@ -62,3 +62,20 @@ inline long long C(int n,int m)
 {
     return fact[n]*Inv(fact[m])%mod*Inv(fact[n-m])%mod;
 }
+
+当模数不太大(mod~10^6)时,可以使用Lucas定理求解组合数.
+更准确地说,只要模数的唯一分解中所有素数幂的和在10^6规模时就可以使用该方法,因为算法的预处理大致相当于这一规模．
+注意这里可以用于非素数模数时求解组合数
+Lucas定理:对于素数p,有:
+C(n, k) = C(floor(n/p), floor(k/p)) * C(n%p, k%p) % p
+其中,当 n<k 时,二项式系数C(n, k)规定为0.
+
+long long Lucas(long long n,long long k,long long p)
+{
+	if(k==0) return 1LL;
+	return C(n%p,k%p,p)*Lucas(n/p,k/p,p)%p;
+}
+
+其中函数C(n,k,p)表示预处理得到的小规模的组合数
+递归至多进行log_p n次，因而算法的复杂度为O(f(p)+g(p)log_p n),
+其中,f(p)为预处理组合数的复杂度; g(p)为单次计算组合数的复杂度．
