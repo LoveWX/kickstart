@@ -79,3 +79,46 @@ long long Lucas(long long n,long long k,long long p)
 其中函数C(n,k,p)表示预处理得到的小规模的组合数
 递归至多进行log_p n次，因而算法的复杂度为O(f(p)+g(p)log_p n),
 其中,f(p)为预处理组合数的复杂度; g(p)为单次计算组合数的复杂度．
+
+扩展欧几里得算法（Extended Euclidean algorithm, EXGCD）,常用于求ax+by=gcd(a,b)的一组可行解．
+设:
+ax1 + by1 = gcd(a, b)
+bx2 + (a mod b)y2 = gcd(b, a mod b)
+由欧几里德定理可知: gcd(a, b) = gcd(b, a mod b)
+所以 ax1 + by1 = bx2 + (a mod b)y2
+又因为 a mod b = a - (floor(a/b) * b)
+所以 ax1 + by1 = bx2 + (a - floor(a/b) * b)y2
+               = ay2 + bx2 - floor(a/b)*by2
+               = ay2 + b(x2 - floor(a/b)*y2)
+所以x1 = y2, y1 = x2 - floor(a/b)y2
+将x2,y2不断带入递归求解直至gcd为0递归x=1,y=0回去求解
+值域分析：ax1 + by1 = gcd(a, b)的解有无数个，
+若b!=0，扩展欧几里德算法求出的可行解必有|x|<=b,|y|<=a
+//函数返回的值为gcd，在这个过程中计算x,y 即可
+int ExGCD(int a, int b, int &x, int &y)
+{
+    if(b==0){
+        x=1;
+        y=0;
+        return a;
+    }
+    int d=ExGCD(b,a%b,x,y);
+    int t=x;
+    x=y;
+    y=t-(a/b)*y;
+    return d;
+}
+也可以用迭代的方法避免递归
+int ExGCD(int a, int b, int& x, int& y)
+{
+    x = 1, y = 0;
+    int x1 = 0, y1 = 1, a1 = a, b1 = b;
+    while (b1) {
+        int q = a1 / b1;
+        tie(x, x1) = make_tuple(x1, x - q * x1);
+        tie(y, y1) = make_tuple(y1, y - q * y1);
+        tie(a1, b1) = make_tuple(b1, a1 - q * b1);
+    }
+    return a1;
+}
+参考：https://oi-wiki.org/math/number-theory/gcd/#%E6%89%A9%E5%B1%95%E6%AC%A7%E5%87%A0%E9%87%8C%E5%BE%97%E7%AE%97%E6%B3%95
