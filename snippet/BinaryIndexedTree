@@ -1,3 +1,31 @@
+struct BIT
+{
+    int n;
+    vector<long long> bit;
+    BIT(int n)
+    {
+        this->n=n;
+        bit.assign(n+1,0);
+    }
+    void update(int idx,long long diff)
+    {
+        for(++idx;idx<=n;idx+=(idx & -idx)){
+            bit[idx]+=diff;
+        }
+    }
+    long long prefixSum(int idx)
+    {
+        long long sum=0;
+        for(++idx;idx;idx-=(idx & -idx)){
+            sum+=bit[idx];
+        }
+        return sum;
+    }
+    long long rangeSum(int idx1,int idx2)
+    {
+        return prefixSum(idx2)-prefixSum(idx1-1);
+    }
+};
 树状数组，又名二元索引树(BIT, Binary Indexed Tree)。
 其初衷是解决数据压缩里的累积频率（Cumulative Frequency）的计算问题，现多用于高效计算数列的前缀和， 区间和。
 它可以以O(logn)的时间得到任意前缀和，并同时支持在O(logn)时间内支持动态单点值的修改。空间复杂度O(n)。
