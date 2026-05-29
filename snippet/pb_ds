@@ -1,0 +1,26 @@
+<ext/pb_ds/assoc_container.hpp> 是 GNU C++ 编译器（g++）特有的扩展库（Policy-Based Data Structures，简称 pb_ds，俗称“平板电视”）。
+它提供了一个极其强大且高度可定制的 tree 容器，底层通常实现为红黑树，不仅支持 std::set 和 std::map 的基础操作，还支持查询元素排名、查找第 k 大、树的分裂与合并等高级功能。
+编译器兼容性：pb_ds 是 GNU 的私货，只能在 g++ 编译器下使用，MSVC（Visual Studio）和 Clang 默认不支持。
+在使用前，需要包含对应的头文件并引入命名空间：
+#include <ext/pb_ds/assoc_container.hpp>
+#include <ext/pb_ds/tree_policy.hpp>
+using namespace __gnu_pbds;
+
+1. 类似 std::set 的有序集合（支持排名操作）
+这是最常用的定义方式，支持 order_of_key（查排名）和 find_by_order（查第k大）：
+find_by_order(idx),idx从0开始,按从小到大的顺序，返回第idx小的数据
+
+// 定义一个存储 int，升序排列，且支持顺序统计的红黑树集合
+tree<int, null_type, std::less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_set;
+
+2. 类似 std::map 的有序映射
+
+// 定义一个 key 为 int，value 为 string 的有序映射
+tree<int, std::string, std::less<int>, rb_tree_tag, tree_order_statistics_node_update> ordered_map;
+
+3. 支持重复元素的集合（类似 std::multiset）
+由于 tree 默认不允许键重复，通常通过将 Key 包装成 pair，并加入一个唯一的时间戳或计数器来实现去重绕过：
+
+// 使用 pair<int, int>，第二个 int 作为时间戳或唯一标识
+tree<std::pair<int, int>, null_type, std::less<std::pair<int, int>>, rb_tree_tag, tree_order_statistics_node_update> ordered_multiset;
+
