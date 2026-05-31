@@ -6,12 +6,13 @@ struct SegTree
     int h;
     vector<int> d;
     vector<int> len;
+    const int UNUSED=0x3f3f3f3f;
     void Build(int size)
     {
         n=size;
         h=sizeof(int)*8-__builtin_clz(n);
         t.assign(n*2,0);
-        d.assign(n,0);
+        d.assign(n,UNUSED);
         len.assign(n*2,1);
         for(int i=n-1;i>=0;--i)
         {
@@ -23,7 +24,7 @@ struct SegTree
         n=vi.size();
         h=sizeof(int)*8-__builtin_clz(n);
         t.assign(n*2,0);
-        d.assign(n,0);
+        d.assign(n,UNUSED);
         len.assign(n*2,1);
         for(int i=0;i<n;++i)
         {
@@ -45,7 +46,7 @@ struct SegTree
         while(p>1)
         {
             p>>=1;
-            if(d[p]==0) t[p]=max(t[p<<1],t[p<<1|1]);
+            if(d[p]==UNUSED) t[p]=max(t[p<<1],t[p<<1|1]);
             else t[p]=d[p];
         }
     }
@@ -54,12 +55,12 @@ struct SegTree
         for(int s=h;s>0;--s)
         {
             int i=p>>s;
-            if(d[i]!=0)
+            if(d[i]!=UNUSED)
             {
                 Apply(i<<1,d[i]);
                 Apply(i<<1|1,d[i]);
             }
-            d[i]=0;
+            d[i]=UNUSED;
         }
     }
     void Modify(int le,int ri,int val)
