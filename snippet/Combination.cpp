@@ -23,44 +23,39 @@ long long C(int n, int m)
 //也可以使用公式:C(n,m)=n!/(m!*(n-m)!) 直接计算
 //需要使用费马小定理和乘法逆元来处理其中的除法
 const long long mod=1e9+7;
-const int SIZE=1000000;
+const int SIZE=100000;
 long long fact[SIZE+1];// fact[i] = i! % mod
-
+long long invf[SIZE+1];
 //求a^b%mod
 long long PowerMod(long long a,long long b)
 {
     long long ans=1;
-    while(b!=0)
-    {
-        if((b&1)!=0)
-        {
-            ans=ans*a%mod;
-        }
+    for(;b;b>>=1){
+        if((b&1)!=0) ans=ans*a%mod;
         a=a*a%mod;
-        b>>=1;
     }
     return ans;
 }
-
 //利用费马小定理a^(p-1)=1 mod p 可知：a^(-1) = a^(p-2) mod p
 inline long long Inv(long long a,long long p=mod-2)
 {
     return PowerMod(a,p);
 }
-
-void Init()
-{
+int init=[]{
     fact[0]=1;
     fact[1]=1;
-    for(int i=2;i<=SIZE;++i)
-    {
+    for(int i=2;i<=SIZE;++i){
         fact[i]=fact[i-1]*i%mod;
     }
-}
-
+    invf[SIZE]=Inv(fact[SIZE]);
+    for(int i=SIZE;i>0;--i){
+        invf[i-1]=invf[i]*i%mod;
+    }
+    return 0;
+}();
 inline long long C(int n,int m)
 {
-    return fact[n]*Inv(fact[m])%mod*Inv(fact[n-m])%mod;
+    return fact[n]*invf[m]%mod*invf[n-m]%mod;
 }
 
 当模数不太大(mod~10^6)时,可以使用Lucas定理求解组合数.
