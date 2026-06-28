@@ -1,25 +1,21 @@
 //Dijkstra算法求单源最短路径。从起点到终点的最短路径可在循环中提前返回，时间复杂度O(V+ElogV)
 //维持各点到目标点的距离，每次选择到目标点距离最短的点，标记为已访问，并用该点更新各点到目标点的距离
-vector<vector<vector<int>>> edge; // edge[i]={{j,dis(i,j)}, ...}
+const int INF=INT_MAX/2;
+vector<vector<array<int,2>>> g; // edge[i]={{j,dis(i,j)}, ...}
 void ShortestPathDijkstra(vector<int> &vdis,int src)
 {
-    priority_queue<vector<int>,vector<vector<int>>,greater<vector<int>>> pq;
+    //vdis.assign(n,INF);
+    priority_queue<array<int,2>,vector<array<int,2>>,greater<array<int,2>>> pq;
     pq.push({0,src});
-    while(!pq.empty())
-    {
-        int dis=pq.top()[0];
-        int dst=pq.top()[1];
+    while(!pq.empty()){
+        auto [dd,cur]=pq.top();
         pq.pop();
-        if(dis>=vdis[dst])
-        {
-            continue;
-        }
-        vdis[dst]=dis;
-        for(vector<int> &vi:edge[dst])
-        {
-            if(dis+vi[1]<vdis[vi[0]])
-            {
-                pq.push({dis+vi[1],vi[0]});
+        if(dd>vdis[cur]) continue;
+        vdis[cur]=dd;
+        for(auto [nxt,ww]:g[cur]){
+            if(dd+ww<vdis[nxt]){
+                vdis[nxt]=dd+ww;
+                pq.push({dd+ww,nxt});
             }
         }
     }
