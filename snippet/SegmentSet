@@ -21,14 +21,12 @@ struct SegmentSet
         int ans=0;
         auto it=m.lower_bound(le);
         auto it0=prev(it);
-        if(it0->first+1==le)
-        {
+        if(it0->first+1==le){
             le=it0->second;
             ans-=it0->first-it0->second+1;
             m.erase(it0);
         }
-        for(;it->second-1<=ri;)
-        {
+        for(;it->second-1<=ri;){
             le=min(le,it->second);
             ri=max(ri,it->first);
             ans-=it->first-it->second+1;
@@ -43,16 +41,12 @@ struct SegmentSet
         int ans=0;
         for(auto it=m.lower_bound(le);it->second<=ri;)
         {
-            if(it->second<le)
-            {
+            if(it->second<le){
                 m[le-1]=it->second;
-            }
-            else
-            {
+            }else{
                 le=it->second;
             }
-            if(ri<it->first)
-            {
+            if(ri<it->first){
                 it->second=ri+1;
                 ans+=ri-le+1;
                 break;
@@ -65,5 +59,61 @@ struct SegmentSet
     bool Empty()
     {
         return m.size()==2U;
+    }
+};
+
+//array版本
+struct SegmentSet
+{
+    set<array<int,2>> sa;
+    SegmentSet()
+    {
+        sa.insert({INT_MIN,INT_MIN});
+        sa.insert({INT_MAX,INT_MAX});
+    }
+    //尝试插入seg:[le,ri],返回插入后实际增加的覆盖点数
+    int Insert(int le,int ri)
+    {
+        int ans=0;
+        auto it=sa.lower_bound({le,INT_MIN});
+        if(auto it0=prev(it);(*it0)[0]+1==le){
+            le=(*it0)[1];
+            ans-=(*it0)[0]-(*it0)[1]+1;
+            sa.erase(it0);
+        }
+        for(;(*it)[1]-1<=ri;){
+            le=min(le,(*it)[1]);
+            ri=max(ri,(*it)[0]);
+            ans-=(*it)[0]-(*it)[1]+1;
+            sa.erase(it++);
+        }
+        sa.insert({ri,le});
+        ans+=ri-le+1;
+        return ans;
+    }
+    //尝试删除seg:[le,ri],返回删除后实际减少的覆盖点数
+    int Remove(int le,int ri)
+    {
+        int ans=0;
+        for(auto it=sa.lower_bound({le,INT_MIN});(*it)[1]<=ri;){
+            if((*it)[1]<le){
+                sa.insert({le-1,(*it)[1]});
+            }else{
+                le=(*it)[1];
+            }
+            if(ri<(*it)[0]){
+                sa.insert({(*it)[0],ri+1});
+                sa.erase(it);
+                ans+=ri-le+1;
+                break;
+            }
+            ans+=(*it)[0]-le+1;
+            sa.erase(it++);
+        }
+        return ans;
+    }
+    bool Empty()
+    {
+        return sa.size()==2U;
     }
 };
