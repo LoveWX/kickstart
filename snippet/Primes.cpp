@@ -1,27 +1,44 @@
 //筛法求[0,MAXV]中的质数
 const int MAXV=100000;
-vector<bool> isPrime(MAXV+1,true);
-isPrime[0]=false;
-isPrime[1]=false;
-for(int i=2;i*i<=MAXV;++i)
-{
-    if(isPrime[i])
-    {
-        for(int j=i*i;j<=MAXV;j+=i)
-        {
-            isPrime[j]=false;
+vector<bool> isPrime(MAXV+1U,true);
+vector<int> vprime;
+int init=[]{
+    isPrime[0U]=isPrime[1U]=false;
+    for(size_t i=2U;i<=MAXV;++i){
+        if(isPrime[i]){
+            vprime.push_back(i);
+            for(size_t j=i*i;j<=MAXV;j+=i){
+                isPrime[j]=false;
+            }
         }
     }
-}
+    return 0;
+}();
 
+const int MAXV=100000;
+vector<bool> isPrime(MAXV+1U,true);
 vector<int> vprime;
-for(int i=2;i<=MAXV;++i)
-{
-    if(isPrime[i])
-    {
-        vprime.push_back(i);
+vector<vector<int>> mpf;//质因数
+int init=[]{
+    isPrime[0U]=isPrime[1U]=false;
+    for(size_t i=2U;i<=MAXV;++i){
+        if(isPrime[i]){
+            vprime.push_back(i);
+            for(size_t j=i*i;j<=MAXV;j+=i){
+                isPrime[j]=false;
+            }
+        }
     }
-}
+    mpf.assign(MAXV+1U,vector<int>());
+    for(size_t i=2U;i<=MAXV;++i){
+        if(isPrime[i]){
+            for(size_t j=i;j<=MAXV;j+=i){
+                mpf[j].push_back(i);
+            }
+        }
+    }
+    return 0;
+}();
 
 //1000以内质数:
 const static vector<int> vprime={2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,
