@@ -1,0 +1,103 @@
+可以在三维欧氏空间中找到一组基向量 𝒊i, j, k. 之后空间中任意一个向量都可以由这组基向量表示．
+换而言之,我们可以通过有限的基向量来描述无限的三维空间,这就是基向量的意义
+三维欧氏空间是特殊的 线性空间，三维欧氏空间的基向量在线性空间中就被推广为了线性基
+OI中有关线性基的应用一般只涉及两类线性空间:n维实线性空间和n维布尔域线性空间.这里讨论异或线性基
+对于线性基,对于数集S,S中任意多个数异或所得的结果均能用一些线性基中的元素异或得到
+意即,线性基的值域和原数集的值域相同,线性基能使用异或运算来表示原数集使用异或运算能表示的所有数
+运用这个性质,就可以极大地减少异或操作所需的查询次数
+高斯消元法相当于从线性方程组的角度去构造线性基，正确性显然
+高斯消元后的矩阵是一个行简化阶梯形矩阵,意即,线性基中的每个向量都已经极小化,且降序排列
+
+设线性基的大小为r.由定义可知,所求线性基可以表示空间中的所有向量.
+因此异或线性基所能表示的(不同的)向量总个数为2^r,其中包括了零向量
+如果将线性基从大到小对应二进制数的高位到低位,那么就可以将这2^r个(不同的)向量,用下标来表示
+这样如果下标的某个bit位为1,则表示对应的向量中包含该bit位对应的线性基
+因此,可以利用异或线性基实现：求某数集子集的:
+1.最大异或和
+由于已经通过高斯消元得到行简化阶梯形矩阵,最大异或和即为线性基各个向量的异或和.对应的下标为(1<<r)-1
+2.最小异或和
+如果子集可以为空,最小异或和为0;否则最小异或和为线性基中最小向量,对应下标为1
+3.第k小异或和
+如果k从0开始计算,且只计算不同的异或和,那么直接按照k的bit位异或对应的线性基即可
+如果需要相同的异或和需要计算多次,那么对于其中自由基的个数c0,也就是数集大小与线性基大小的差值,
+每个不同的异或值对应2^c0个相同的异或值
+4.第k大异或和
+同样从0开始计数,转换成第(1<<r)-1-k小异或值
+5.求一个数在所有异或和中的排名
+转换为尝试求对应的下标.注意到高斯消元得到的极小线性基,可以通过异或值依次确定下标的每一bit位
+6.判断一个数能否表示成异或和；求一个数表示成异或和的方案数；
+同上一条求下标.可以通过异或值依次确定下标的每一bit位,如果某个bit位无法匹配,则不能表示为异或和
+方案数则需要乘以2^c0
+
+const int BIT=29;
+struct LinearBasis
+{
+    vector<int> vlb;
+    LinearBasis(vector<int> &a)
+    {
+        if(a.empty()) return;
+        CalcLinearBasis(a);
+    }
+    void CalcLinearBasis(vector<int> &a)
+    {
+        unsigned int n=a.size();
+        unsigned int r=0;
+        for(int b=BIT;b>=0 && r<n;--b){
+            for(unsigned int i=r;i<n;++i){
+                if(a[i]&(1<<b)){
+                    swap(a[i],a[r]);
+                    break;
+                }
+            }
+            if((a[r]&(1<<b))==0) continue;
+            for(unsigned int i=0;i<n;++i){
+                if(i==r) continue;
+                if(a[i]&(1<<b)) a[i]^=a[r];
+            }
+            ++r;
+        }
+        vlb=vector<int>(a.begin(),a.begin()+r);
+    }
+    int CalcMaxXor()
+    {
+        int X=0;
+        for(int i:vlb){
+            X^=i;
+        }
+        return X;
+    }
+    int CalcMinXor()
+    {
+        return vlb.empty() ? 0 : vlb.back();
+    }
+    int CalcKthSmallest(int K)
+    {
+        int X=0;
+        int r=vlb.size();
+        for(int i=r-1,j=0;i>=0;--i,++j){
+            if(K&(1<<i)){
+                X^=vlb[j];
+            }
+        }
+        return X;
+    }
+    int CalcKthBiggest(int K)
+    {
+        int r=vlb.size();
+        return CalcKthSmallest((1<<r)-1-K);
+    }
+    int CalcIdx(int X)
+    {
+        if(X==0) return 0;
+        int r=vlb.size();
+        int idx=0;
+        for(int i=r-1,j=0;i>=0;--i,++j){
+            int b=32-1-__builtin_clz(vlb[j]);
+            if(X&(1<<b)){
+                idx^=1<<i;
+                X^=1<<b;
+            }
+        }
+        return X==0 ? idx : -1;
+    }
+};
