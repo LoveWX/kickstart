@@ -40,3 +40,41 @@ struct SegTree
     }
 };
 
+template<typename T>
+struct SegTree
+{
+    //单点修改assign，区间查询sum
+    int n;
+    vector<T> tr;
+    void Build(int size)
+    {
+        n=size;
+        tr.assign(n*2,0);
+    }
+    void Build(vector<T> &vi)
+    {
+        n=vi.size();
+        tr.assign(n*2,0);
+        for(int i=0;i<n;++i){
+            tr[i+n]=vi[i];
+        }
+        for(int i=n-1;i>0;--i){
+            tr[i]=tr[i<<1]+tr[i<<1|1];
+        }
+    }
+    T Query(int l,int r)
+    {
+        T ans=0;
+        for(l+=n,r+=n;l<r;l>>=1,r>>=1){
+            if(l&1) ans+=tr[l++];
+            if(r&1) ans+=tr[--r];
+        }
+        return ans;
+    }
+    void Modify(int p,T val)
+    {
+        for(tr[p+=n]=val;p>1;p>>=1){
+            tr[p>>1]=tr[p]+tr[p^1];
+        }
+    }
+};
