@@ -64,6 +64,7 @@ struct SegmentTree
     }
     int Query(int ql,int qr)
     {
+        if(ql>qr) return UNUSED;
         return query(1,0,n-1,ql,qr);
     }
     void pushup(int idx)
@@ -88,6 +89,7 @@ struct SegmentTree
     }
     void Modify(int l,int r,T diff)
     {
+        if(l>r) return;
         update(1,0,n-1,l,r,diff);
     }
 };
