@@ -62,7 +62,7 @@ struct SegmentTree
         T ansr=query(idx*2+1,m+1,r,ql,qr);
         return ansl+ansr;
     }
-    int Query(int ql,int qr)
+    T Query(int ql,int qr)
     {
         if(ql>qr) return UNUSED;
         return query(1,0,n-1,ql,qr);
