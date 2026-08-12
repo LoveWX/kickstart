@@ -1,0 +1,66 @@
+template<typename T>
+struct SegmentTree
+{
+    const T UNUSED=0LL;
+    int n;//原数组最大容量
+    int cnt;//已经分配的点数,理论上最多使用2n-1个
+    int root;//根结点所在idx
+    vector<T> vals;
+    vector<int> lc,rc;
+    SegmentTree(int n)
+    {
+        this->n=n;
+        vals.assign(n<<1,UNUSED);
+        lc.assign(n<<1,0);
+        rc.assign(n<<1,0);
+        cnt=0;
+        root=0;//root也需要在第一次访问时分配下标
+    }
+    T merge(T le,T ri)
+    {
+        return le+ri;
+    }
+    T query(int idx,int l,int r,int ql,int qr)
+    {
+        if(idx==0) return UNUSED;
+        if(ql<=l && r<=qr) return vals[idx];
+        int m=l+((r-l)>>1);
+        if(qr<=m){
+            return query(lc[idx],  l,m,ql,qr);
+        }
+        if(m<ql){
+            return query(rc[idx],m+1,r,ql,qr);
+        }
+        T ansl=query(lc[idx],  l,m,ql,qr);
+        T ansr=query(rc[idx],m+1,r,ql,qr);
+        return merge(ansl,ansr);
+    }
+    T Query(int ql,int qr)
+    {
+        return query(root,0,n-1,ql,qr);
+    }
+    void pushup(int idx)
+    {
+        vals[idx]=merge(vals[lc[idx]],vals[rc[idx]]);
+    }
+    void update(int &idx,int l,int r,int qi,T todoval)
+    {
+        if(idx==0) idx=++cnt;
+        if(l==r){
+            vals[idx]=merge(vals[idx],todoval);
+            return;
+        }
+        int m=(l+r)>>1;
+        if(qi<=m){
+            update(lc[idx],  l,m,qi,todoval);
+        }
+        if(m<qi){
+            update(rc[idx],m+1,r,qi,todoval);
+        }
+        pushup(idx);
+    }
+    void Update(int qi,T todoval)
+    {
+        update(root,0,n-1,qi,todoval);
+    }
+};
