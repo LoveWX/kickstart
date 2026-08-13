@@ -1,0 +1,118 @@
+//https://oi-wiki.org/ds/persistent-seg/
+
+struct PersistentSegmentTree
+{
+    using T=int;
+    int n;//原数组容量
+    vector<T> vals;//值域
+    int nval;//值域压缩后点的数量
+    int node;//已经分配的点数,理论上最多使用(2n-1)+(n*log(nval))个
+    vector<T> cnt;//对应的结点的个数
+    vector<long long> sum;//对应的结点的和
+    vector<int> lc,rc;//左右子结点idx
+    vector<int> root;//根结点所在idx
+    PersistentSegmentTree(const vector<T> &a)
+    {
+        n=a.size();
+        vals=a;
+        sort(vals.begin(),vals.end());
+        vals.resize(unique(vals.begin(),vals.end())-vals.begin());
+        nval=vals.size();
+        cnt.assign(n*20,0);
+        sum.assign(n*20,0LL);
+        lc.assign(n*20,0);
+        rc.assign(n*20,0);
+        node=0;
+        root.assign(n+1,0);
+        root[0]=build(0,nval-1);
+        for(int i=0;i<n;++i){
+            root[i+1]=update(root[i],Idx(a[i]),0,nval-1,a[i]);
+        }
+    }
+    int build(int l,int r)
+    {
+        int cur=++node;
+        if(l==r) return cur;
+        int m=(l+r)>>1;
+        lc[cur]=build(l,m);
+        rc[cur]=build(m+1,r);
+        return cur;
+    }
+    unsigned int Idx(int val)
+    {
+        return lower_bound(vals.begin(),vals.end(),val)-vals.begin();
+    }
+    int update(int last,int idx,int l,int r,T todoval)
+    {
+        int curr=++node;
+        lc[curr]=lc[last];
+        rc[curr]=rc[last];
+        cnt[curr]=cnt[last]+1;
+        sum[curr]=sum[last]+todoval;
+        if(l==r) return curr;
+        int m=l+((r-l)>>1);
+        if(idx<=m){
+            lc[curr]=update(lc[last],idx,  l,m,todoval);
+        }else{
+            rc[curr]=update(rc[last],idx,m+1,r,todoval);
+        }
+        return curr;
+    }
+    T kth(int t0,int t1,int l,int r,int k)
+    {
+        if(l==r) return l;
+        int m=l+((r-l)>>1);
+        int x=cnt[lc[t1]]-cnt[lc[t0]];//左子树结点个数
+        if(k<=x) return kth(lc[t0],lc[t1],l,m,k);
+        return kth(rc[t0],rc[t1],m+1,r,k-x);
+    }
+    //求原数组下标[idx0,idx1]中第k小的值是多少,k从1开始计数,重复的数都分别计算个数
+    T Kth(int idx0,int idx1,int k)
+    {
+        return vals[kth(root[idx0],root[idx1+1],0,nval-1,k)];
+    }
+    int valueCount(int t0,int t1,int l,int r,int ql,int qr)
+    {
+        if(ql<=l && r<=qr) return cnt[t1]-cnt[t0];
+        int m=l+((r-l)>>1);
+        if(qr<=m){
+            return valueCount(lc[t0],lc[t1],  l,m,ql,qr);
+        }
+        if(m<ql){
+            return valueCount(rc[t0],rc[t1],m+1,r,ql,qr);
+        }
+        T ansl=valueCount(lc[t0],lc[t1],  l,m,ql,qr);
+        T ansr=valueCount(rc[t0],rc[t1],m+1,r,ql,qr);
+        return ansl+ansr;
+    }
+    //求原数组下标[idx0,idx1]中值在[val0,val1]中的数有多少个
+    int ValueCount(int idx0,int idx1,int val0,int val1)
+    {
+        if(val1<vals[0] || vals.back()<val0) return 0;
+        int ql=lower_bound(vals.begin(),vals.end(),val0)-vals.begin();
+        int qr=upper_bound(vals.begin(),vals.end(),val1)-vals.begin();
+        return valueCount(root[idx0],root[idx1+1],0,nval-1,ql,qr-1);
+    }
+    long long sumCount(int t0,int t1,int l,int r,int ql,int qr)
+    {
+        if(ql<=l && r<=qr) return sum[t1]-sum[t0];
+        int m=l+((r-l)>>1);
+        if(qr<=m){
+            return sumCount(lc[t0],lc[t1],  l,m,ql,qr);
+        }
+        if(m<ql){
+            return sumCount(rc[t0],rc[t1],m+1,r,ql,qr);
+        }
+        long long ansl=sumCount(lc[t0],lc[t1],  l,m,ql,qr);
+        long long ansr=sumCount(rc[t0],rc[t1],m+1,r,ql,qr);
+        return ansl+ansr;
+    }
+    //求原数组下标[idx0,idx1]中值在[val0,val1]中的数的和
+    long long SumCount(int idx0,int idx1,int val0,int val1)
+    {
+        if(val1<vals[0] || vals.back()<val0) return 0LL;
+        int ql=lower_bound(vals.begin(),vals.end(),val0)-vals.begin();
+        int qr=upper_bound(vals.begin(),vals.end(),val1)-vals.begin();
+        return sumCount(root[idx0],root[idx1+1],0,nval-1,ql,qr-1);
+    }
+};
