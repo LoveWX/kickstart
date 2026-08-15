@@ -1,0 +1,82 @@
+struct SegmentTree
+{
+    using T=long long;
+    const T UNUSED=0LL;
+    int n;
+    int nb;
+    vector<T> vals;
+    vector<T> todo;
+    SegmentTree(int n)
+    {
+        this->n=n;
+        int bit=(n-1==0 ? 0 : sizeof(int)*8U-__builtin_clz(n-1));
+        nb=1<<bit;
+        vals.assign(nb<<1,UNUSED);
+        todo.assign(nb<<1,UNUSED);
+    }
+    SegmentTree(const vector<T> &a)
+    {
+        n=a.size();
+        int bit=(n-1==0 ? 0 : sizeof(int)*8U-__builtin_clz(n-1));
+        nb=1<<bit;
+        vals.assign(nb<<1,UNUSED);
+        todo.assign(nb<<1,UNUSED);
+        build(a,1,0,n-1);
+    }
+    T merge(T le,T ri)
+    {
+        return le+ri;
+    }
+    void pushup(int idx)
+    {
+        vals[idx]=merge(vals[idx*2],vals[idx*2+1]);
+    }
+    void build(const vector<T> &a,int idx,int l,int r)
+    {
+        if(l==r){
+            vals[idx]=a[l];
+            return;
+        }
+        int m=l+((r-l)>>1);
+        build(a,idx*2,l,m);
+        build(a,idx*2+1,m+1,r);
+        pushup(idx);
+    }
+    T query(int idx,int l,int r,int ql,int qr)
+    {
+        if(ql<=l && r<=qr) return vals[idx];
+        int m=l+((r-l)>>1);
+        if(qr<=m){
+            return query(idx*2,    l,m,ql,qr);
+        }
+        if(m<ql){
+            return query(idx*2+1,m+1,r,ql,qr);
+        }
+        T ansl=query(idx*2,    l,m,ql,qr);
+        T ansr=query(idx*2+1,m+1,r,ql,qr);
+        return merge(ansl,ansr);
+    }
+    T Query(int ql,int qr)
+    {
+        return query(1,0,n-1,ql,qr);
+    }
+    void update(int idx,int l,int r,int qi,T todoval)
+    {
+        if(l==r){
+            vals[idx]=merge(vals[idx],todoval);
+            return;
+        }
+        int m=(l+r)>>1;
+        if(qi<=m){
+            update(idx*2  ,  l,m,qi,todoval);
+        }
+        if(m<qi){
+            update(idx*2+1,m+1,r,qi,todoval);
+        }
+        pushup(idx);
+    }
+    void Update(int idx,T todoval)
+    {
+        update(1,0,n-1,idx,todoval);
+    }
+};
