@@ -1,0 +1,80 @@
+struct Node
+{
+    int mxl,pre,suf;
+};
+struct SegmentTree
+{
+    string s;
+    int n;
+    int nb;
+    vector<Node> tr;
+    SegmentTree(const string &a)
+    {
+        s=a;
+        n=a.size();
+        int bit=(n-1==0 ? 0 : sizeof(int)*8U-__builtin_clz(n-1));
+        nb=1<<bit;
+        tr.assign(nb<<1,Node());
+        build(1,0,n-1);
+    }
+    //子结点合并,需要修改这里
+    void merge(Node &cur,Node &nle,Node &nri,int l,int m,int r)
+    {
+        ;
+    }
+    void pushup(int idx,int l,int m,int r)
+    {
+        merge(tr[idx],tr[idx*2],tr[idx*2+1],l,m,r);
+    }
+    void build(int idx,int l,int r)
+    {
+        if(l==r){
+            tr[idx].mxl=tr[idx].pre=tr[idx].suf=1;
+            return;
+        }
+        int m=l+((r-l)>>1);
+        build(idx*2,l,m);
+        build(idx*2+1,m+1,r);
+        pushup(idx,l,m,r);
+    }
+    Node query(int idx,int l,int r,int ql,int qr)
+    {
+        if(ql<=l && r<=qr) return tr[idx];
+        int m=l+((r-l)>>1);
+        if(qr<=m){
+            return query(idx*2,    l,m,ql,qr);
+        }
+        if(m<ql){
+            return query(idx*2+1,m+1,r,ql,qr);
+        }
+        Node ansl=query(idx*2,    l,m,ql,qr);
+        Node ansr=query(idx*2+1,m+1,r,ql,qr);
+        Node ans;
+        merge(ans,ansl,ansr,l,m,r);
+        return ans;
+    }
+    int Query(int ql,int qr)
+    {
+        //可以附加原始数据上的额外操作
+        return query(1,0,n-1,ql,qr).mxl;
+    }
+    void update(int idx,int l,int r,int qi)
+    {
+        if(l==r){
+            return;
+        }
+        int m=(l+r)>>1;
+        if(qi<=m){
+            update(idx*2  ,  l,m,qi);
+        }
+        if(m<qi){
+            update(idx*2+1,m+1,r,qi);
+        }
+        pushup(idx,l,m,r);
+    }
+    void Update(int idx,char todoval)
+    {
+        //可以附加原始数据上的额外操作
+        update(1,0,n-1,idx);
+    }
+};
