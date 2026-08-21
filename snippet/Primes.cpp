@@ -69,3 +69,9 @@ vector<array<int,2>> Decompose(int a)
     if(a>1) vp.push_back({a,1});
     return vp;
 }
+
+//多个数的最小公倍数,lcm(a,b,c)=lcm(lcm(a,b),c)
+long long l=1;
+for(int i=0;i<n;++i){
+    l*=a[i]/gcd(l,a[i]);
+}
