@@ -1,0 +1,233 @@
+// 莫队算法用于解决序列上的区间询问问题,通常具有这些特征
+// 1.查询可以离线
+// 2.用分治/线段树等数据结构不容易处理区间合并操作
+// 3.从[l,r]的答案以O(1)代价求得相邻区间[l-1,r],[l+1,r],[l,r+1],[l,r-1]的代价
+// 一般流程为：
+// 1.将原数组划分成大小相等的几个块,每个块大小为B,最后一个块可能较小.
+// 2.排序查询区间,先按照所在块的编号排序,再按照查询区间的右端排序
+// 3.设置初始数组[1,0]表示空区间,通过在区间首尾增减一个元素的方式,依次通过相邻区间求得下一个目标区间的解
+// 4.依据上一个查询区间的解依次可以求得每一个查询区间的解
+// 对于每一个查询,当前区间的左端点需要左右移动至多B次,时间复杂度为O(qB)
+// 对于每一个块中的查询而言,当前区间的右端点需要从数组左端移动到右端,需要O(n)时间,时间复杂度为O(n*(n/B))
+// 因此总和时间复杂度为O(qB+n^2/B),当B=n/sqrt(q)时取最小值
+
+void solve()
+{
+    B = ceil(sqrt(n));//块大小
+    sort(querys);//以<左端点所在块,右端点>为关键字从小到大排序
+    for (int i = 0; i < nq; ++i){
+        const query &q = querys[i];
+        while (l > q.l) move(--l, 1);//左端点尝试左移,增加对a[--l]的统计
+        while (r < q.r) move(++r, 1);//右端点尝试右移,增加对a[++r]的统计
+        while (l < q.l) move(l++, -1);//左端点尝试右移,删除对a[l++]的统计
+        while (r > q.r) move(r--, -1);//右端点尝试左移,增加对a[r--]的统计
+        ans[q.id] = nowAns;//当前区间已经和查询区间相等,记录原查询的结果
+    }
+}
+
+//以https://leetcode.cn/problems/valid-k-unique-subarrays-i/为例:
+struct Mo
+{
+    unordered_map<int,int> mc;
+    int odd;
+    vector<bool> Calc(const vector<int> &vi,const vector<vector<int>> &q,size_t k)
+    {
+        int n=vi.size();
+        int nq=q.size();
+        const int B=ceil(n/sqrt(nq));//块大小
+        odd=0;
+        vector<array<int,4>> vq;
+        vq.reserve(q.size());
+        for(int i=0;i<nq;++i){
+            vq.push_back({q[i][0],q[i][1],q[i][0]/B,i});
+        }
+        sort(vq.begin(),vq.end(),[](array<int,4> &a,array<int,4> &b){
+            return a[2]!=b[2] ? a[2]<b[2] : a[1]<b[1];
+        });//排序查询区间
+        vector<bool> ans(nq,false);
+        for(int i=0,l=1,r=0;i<nq;++i){//暴力扩展到每个查询区间
+            int ql=vq[i][0],qr=vq[i][1];
+            while(l>ql){
+                Add(vi[--l]);
+            }
+            while(r<qr){
+                Add(vi[++r]);
+            }
+            while(l<ql){
+                Del(vi[l++]);
+            }
+            while(r>qr){
+                Del(vi[r--]);
+            }
+            if(mc.size()==k && odd==0) ans[vq[i][3]]=true;
+        }
+        return ans;
+    }
+    void Add(int num)
+    {
+        int &c=mc[num];
+        c+=1;
+        if(c&1) odd+=1;
+        else odd-=1;
+    }
+    void Del(int num)
+    {
+        int &c=mc[num];
+        c-=1;
+        if(c&1) odd+=1;
+        else odd-=1;
+        if(c==0) mc.erase(num);
+    }
+};
+
+//如果按照块下标的奇偶性,偶数块右端点从小到大排序,奇数块右端点从大到小排序,
+//就不用对每个块都从0到n扩展右端点,再在下一个块时从n返回0,而是(大约)每两个块跑一个来回
+    sort(vq.begin(),vq.end(),[](array<int,4> &a,array<int,4> &b){
+        if(a[2]!=b[2]) return a[2]<b[2];
+        return a[2]&1 ? a[1]>b[1] : a[1]<b[1];
+    });
+
+//把计数器单独写成Node的写法,注意Node的构造析构可能拖慢速度
+struct Node
+{
+    unordered_map<int,int> mc;
+    int odd;
+    int k;
+    Node(int k)
+    {
+        odd=0;
+        this->k=k;
+    }
+    void Add(int num)
+    {
+        int &c=mc[num];
+        c+=1;
+        if(c&1) odd+=1;
+        else odd-=1;
+    }
+    void Del(int num)
+    {
+        int &c=mc[num];
+        c-=1;
+        if(c&1) odd+=1;
+        else odd-=1;
+        if(c==0) mc.erase(num);
+    }
+    bool Check()
+    {
+        return mc.size()==k && odd==0;
+    }
+};
+struct Mo
+{
+    vector<bool> Calc(const vector<int> &vi,const vector<vector<int>> &q,int k)
+    {
+        int n=vi.size();
+        int nq=q.size();
+        const int B=ceil(n/sqrt(nq));//块大小
+        vector<array<int,4>> vq;
+        vq.reserve(q.size());
+        for(int i=0;i<nq;++i){
+            vq.push_back({q[i][0],q[i][1],q[i][0]/B,i});
+        }
+        sort(vq.begin(),vq.end(),[](array<int,4> &a,array<int,4> &b){
+            if(a[2]!=b[2]) return a[2]<b[2];
+            return a[2]&1 ? a[1]>b[1] : a[1]<b[1];
+        });
+        Node cur(k);
+        vector<bool> ans(nq,false);
+        for(int i=0,l=vq[i][0]+1,r=vq[i][0];i<nq;++i){//暴力扩展到每个查询区间
+            int ql=vq[i][0],qr=vq[i][1];
+            while(l>ql){
+                cur.Add(vi[--l]);
+            }
+            while(r<qr){
+                cur.Add(vi[++r]);
+            }
+            while(l<ql){
+                cur.Del(vi[l++]);
+            }
+            while(r>qr){
+                cur.Del(vi[r--]);
+            }
+            ans[vq[i][3]]=cur.Check();
+        }
+        return ans;
+    }
+};
+
+//回滚莫队
+//注意到普通莫队算法中需要有区间的增删两种操作,但是有可能会出现增加操作比较容易而删减操作很困难的情况
+//对于每个块中的查询区间,构造对应的基础区间,其左端点为块的右端点,其右端点仍为查询区间右端点
+//这样按照之前的查询顺序,只需要(向右)增加操作就可以依次得到每个基础区间,而依据每个基础区间可以(向左)增加操作求解对应的查询区间
+//注意,如果查询区间包含在某个块中,只能暴力计算了
+struct Node
+{
+    unordered_map<int,int> mc;
+    int odd;
+    int k;
+    Node(int kk)
+    {
+        odd=0;
+        this->k=kk;
+    }
+    Node(Node &t)
+    {
+        mc=t.mc;
+        odd=t.odd;
+        k=t.k;
+    }
+    void Add(int num)
+    {
+        int &c=mc[num];
+        c+=1;
+        if(c&1) odd+=1;
+        else odd-=1;
+    }
+    bool Check()
+    {
+        return mc.size()==k && odd==0;
+    }
+};
+struct Mo
+{
+    vector<bool> Calc(const vector<int> &vi,const vector<vector<int>> &q,size_t k)
+    {
+        int n=vi.size();
+        int nq=q.size();
+        const int B=ceil(n/sqrt(nq));
+        vector<bool> ans(nq,false);
+        vector<vector<array<int,3>>> mq(B);
+        for(int i=0;i<nq;++i){
+            int l=q[i][0],r=q[i][1],b=l/B;
+            if(r<(b+1)*B){
+                Node s(k);
+                for(int j=l;j<=r;++j){
+                    s.Add(vi[j]);
+                }
+                ans[i]=s.Check();
+            }else{
+                mq[b].push_back({l,r,i});
+            }
+        }
+        for(int b=0;b<n/B;++b){
+            vector<array<int,3>> &vq=mq[b];
+            sort(vq.begin(),vq.end(),[](array<int,3> &a,array<int,3> &b){
+                return a[1]<b[1];
+            });
+            Node s(k);
+            int ri=(b+1)*B-1;
+            for(auto [ql,qr,qi]:vq){
+                while(ri<qr){
+                    s.Add(vi[++ri]);
+                }
+                Node t(s);
+                for(int l=(b+1)*B;l>ql;){
+                    t.Add(vi[--l]);
+                }
+                ans[qi]=t.Check();
+            }
+        }
+        return ans;
+    }
+};
