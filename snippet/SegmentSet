@@ -74,10 +74,12 @@ struct SegmentSet
 struct SegmentSet
 {
     set<array<int,2>> sa;
+    int sumlen;
     SegmentSet()
     {
         sa.insert({INT_MIN,INT_MIN});
         sa.insert({INT_MAX,INT_MAX});
+        sumlen=0;
     }
     //尝试插入seg:[le,ri],返回插入后实际增加的覆盖点数
     int Insert(int le,int ri)
@@ -97,6 +99,7 @@ struct SegmentSet
         }
         sa.insert({ri,le});
         ans+=ri-le+1;
+        sumlen+=ans;
         return ans;
     }
     //尝试删除seg:[le,ri],返回删除后实际减少的覆盖点数
@@ -118,10 +121,15 @@ struct SegmentSet
             ans+=(*it)[0]-le+1;
             sa.erase(it++);
         }
+        sumlen-=ans;
         return ans;
     }
     bool Empty()
     {
         return sa.size()==2U;
+    }
+    int SegCount()
+    {
+        return sa.size()-2U;
     }
 };
