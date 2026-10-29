@@ -172,3 +172,71 @@ int findLCA(int u,int v)
     }
     return up[0][u];
 }
+
+//封装
+struct BinaryLifting
+{
+    int N;//节点总数
+    int LOGSIZE;//2^LOGSIZE>=节点总数
+    vector<vector<int>> anc;//2^i个祖先节点,跳过根节点则用-1表示
+    vector<int> depth;//每个节点的深度,根节点深度为0
+    BinaryLifting(vector<int> &parent,int root=-1)
+    {
+        N=parent.size();
+        if(root<0){
+            for(root=0;root<N && parent[root]>=0;++root);
+        }
+        depth.assign(N,-1);
+        depth[root]=0;
+        for(int i=0;i<N;++i){
+            if(depth[i]<0) dfs_depth(parent,i);
+        }
+        Init(parent);
+    }
+    int dfs_depth(vector<int> &parent,int cur)
+    {
+        if(depth[cur]!=-1) return depth[cur];
+        return depth[cur]=1+dfs_depth(parent,parent[cur]);
+    }
+    void Init(vector<int> &parent)
+    {
+        LOGSIZE=sizeof(int)*8U-__builtin_clz(N);
+        anc.assign(N,vector<int>(LOGSIZE,-1));
+        for(int i=0;i<N;++i){
+            anc[i][0]=parent[i];
+        }
+        for(int j=1;j<LOGSIZE;++j){
+            for(int i=0;i<N;++i){
+                if(anc[i][j-1]!=-1){
+                    anc[i][j]=anc[anc[i][j-1]][j-1];
+                }
+            }
+        }
+    }
+    int getKthAncestor(int curr,int k)
+    {
+        for(int b=0;k!=0;k>>=1,++b){
+            if((k&1)==0) continue;
+            if(anc[curr][b]==-1) return -1;
+            curr=anc[curr][b];
+        }
+        return curr;
+    }
+    int FindLCA(int u,int v)
+    {
+        if(depth[u]<depth[v]) swap(u,v);
+        for(int b=LOGSIZE-1;b>=0;--b){
+            if(anc[u][b]>=0 && depth[anc[u][b]]>=depth[v]){
+                u=anc[u][b];
+            }
+        }
+        if(u==v) return u;
+        for(int b=LOGSIZE-1;b>=0;--b){
+            if(anc[u][b]!=anc[v][b]){
+                u=anc[u][b];
+                v=anc[v][b];
+            }
+        }
+        return anc[u][0];
+    }
+};
